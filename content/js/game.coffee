@@ -1,40 +1,36 @@
 class @Game
   constructor: ({
     # Element which will get the game canvas as a child
-    parentElement,
+    @parentElement,
     # Element to attach events to
-    eventsElement
+    @eventsElement
   }) ->
-    @parentElement = parentElement
-    @eventsElement = eventsElement
-
     @dragging = false
     @mouseX = @mouseY = 0
 
-    @graphics = new Graphics(parentElement, document.location.hash == '#stats')
+    @graphics = new Graphics(@parentElement)
     @keyboard = new Keyboard
     @clock = new Clock
 
   init: (onFinished) ->
-    @graphics.loadAssets =>
+    @graphics.init()
+    #@graphics.loadAssets =>
       #@map = new Map(@graphics.waterImage)
-      onFinished()
+    onFinished()
 
   start: ->
-    @graphics.createScene()
-    @graphics.start()
-    $(@graphics.renderer.domElement)
+    $(@eventsElement)
       .mousedown(@onMouseDown)
       .click(@onMouseClick)
     $(document.body).mouseup(@onMouseUp)
+
+    $(document).keydown(@keyboard.onKeyDown).keyup(@keyboard.onKeyUp)
 
     document.addEventListener 'mozvisibilitychange', @handleVisibilityChange, false
     if document.mozVisibilityState and document.mozVisibilityState != 'visible'
       console.log 'Not starting animation because game not visible'
     else
       @startAnimation()
-
-    $(document).keydown(@keyboard.onKeyDown).keyup(@keyboard.onKeyUp)
 
   startAnimation: ->
     if @animating
@@ -66,8 +62,6 @@ class @Game
     deltaTime = @clock.tick()
     @graphics.animate deltaTime
 
-    @graphics.mesh.rotation = new THREE.Vector3(@totalTime, 0, 0)
-    @graphics.mesh.updateMatrix()
     @graphics.render()
 
   onMouseDown: (event) =>
@@ -89,7 +83,7 @@ class @Game
     if @dragging
       dx = x - @mouseX
       dy = y - @mouseY
-      @graphics.camera.translateZ dy
+      #@graphics.camera.translateZ dy
 
     @mouseX = x
     @mouseY = y

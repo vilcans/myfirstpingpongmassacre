@@ -1,133 +1,100 @@
-PI = Math.PI
-Vector2 = THREE.Vector2
-Vector3 = THREE.Vector3
-Matrix4 = THREE.Matrix4
-ORIGIN = new Vector3(0, 0, 0)
+vertexShader = """
+#ifdef GL_ES
+precision highp float;
+#endif
+
+attribute vec3 position;
+
+void main() {
+  gl_Position = vec4(position, 1.0);
+}
+"""
+
+fragmentShader = """
+#ifdef GL_ES
+precision highp float;
+#endif
+
+uniform vec2 resolution;
+
+void main() {
+  gl_FragColor = vec4(gl_FragCoord.xy / resolution, .0, 1.0);
+}
+"""
 
 class @Graphics
-  constructor: (parentElement, enableStats) ->
-    @parentElement = parentElement
-    @renderer = new THREE.WebGLRenderer()
-    @dimensions = new THREE.Vector2(
-      parentElement.clientWidth, parentElement.clientHeight)
-    @renderer.setSize @dimensions.x, @dimensions.y
 
-    if enableStats
-      @stats = new Stats()
+  constructor: (@parentElement) ->
 
-  loadAssets: (onFinished) ->
-    callbacks = new Callbacks(onFinished)
-    @texture = THREE.ImageUtils.loadTexture('assets/f-diffuse.png', {},
-      callbacks.add ->
-    )
+    @canvas = document.createElement 'canvas'
+    @gl = null
+    @buffer = null
+    @uniforms = {}
 
-    # @material = new THREE.ShaderMaterial(
-    #   vertexShader: """
-    #     varying vec2 vUv;
-    #     void main() {
-    #       vUv = uv;
-    #       gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-    #     }
-    #     """
-    #   fragmentShader: """
-    #     uniform sampler2D diffuseMap;
-    #     varying vec2 vUv;
+  init: ->
+    @parentElement.appendChild @canvas
+    @canvas.width = @parentElement.clientWidth
+    @canvas.height = @parentElement.clientHeight
 
-    #     void main() {
-    #       //gl_FragColor = texture2D(diffuseMap, vUv);
-    #       gl_FragColor = vec4(.5, .5, .5, .8);
-    #     }
-    #     """
-    #   uniforms:
-    #     diffuseMap:
-    #       type: 't'
-    #       value: 0
-    #       texture: @texture
-    # )
+    gl = @gl = @canvas.getContext('experimental-webgl') || @canvas.getContext('webgl')
+    if not gl
+      throw new Error('WebGL not supported')
 
-    @material = new THREE.MeshLambertMaterial {
-      color: 0xffffff
-      ambient: 0x333333
-      shading: THREE.FlatShading
-      map: @texture
-    }
+    # Create vertex buffer (2 triangles)
+    @vertexBuffer = gl.createBuffer()
+    gl.bindBuffer gl.ARRAY_BUFFER, @vertexBuffer
+    gl.bufferData gl.ARRAY_BUFFER, new Float32Array(
+      [ -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0 ]
+    ), gl.STATIC_DRAW
 
-    loader = new THREE.JSONLoader()
-    loader.load(
-      'assets/f.js',
-      callbacks.add (geometry) =>
-        #geometry.applyMatrix(new THREE.Matrix4().makeScale(1, -1, 1))
-        #geometry.applyMatrix(new Matrix4().setTranslation(0, 0, 1))
-        @geometry = geometry
-    )
+    @updateSize @canvas.width, @canvas.height
 
-  createScene: ->
-    @renderer.setClearColorHex(0x448899, 1.0)
-    @scene = new THREE.Scene()
+    program = gl.createProgram()
+    vs = @createShader(vertexShader, gl.VERTEX_SHADER)
+    fs = @createShader(fragmentShader, gl.FRAGMENT_SHADER)
+    gl.attachShader program, vs
+    gl.attachShader program, fs
+    #gl.deleteShader vs
+    #gl.deleteShader fs
+    gl.linkProgram program
+    if not gl.getProgramParameter(program, gl.LINK_STATUS)
+      error = gl.getProgramInfoLog program
+      throw new Error('Linking failed: ' + error)
 
-    @camera = new THREE.PerspectiveCamera(
-      35,         # Field of view
-      @dimensions.x / @dimensions.y,  # Aspect ratio
-      .1,         # Near
-      10000       # Far
-    )
-    #@setCamera 0, 10, -20
-    @camera.position.z = 20
-    console.log 'scene pos', @scene.position, 'dimensions', @dimensions
-    @camera.lookAt @scene.position
-    @scene.add @camera
+    @uniforms.resolution = gl.getUniformLocation(program, 'resolution')
 
-    @light = new THREE.PointLight 0xFFFFFF
-    @light.position.set(-100, 0, 100)
-    @scene.add @light
+    @program = program
+    gl.useProgram @program
 
-    @planetMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(
-        3,  # radius
-        25, # segmentsWidth
-        50,  # segmentsHeight
-        -PI / 2,  # phiStart
-        2 * PI, # phiLength
-      ),
-      #new THREE.MeshBasicMaterial {color: 0xFF0000}
-      new THREE.MeshLambertMaterial {
-        color: 0xffffff
-        ambient: 0x333333
-        shading: THREE.FlatShading
-      }
-    )
-    @scene.add @planetMesh
+    @vertexPosition = gl.getAttribLocation(program, 'position')
+    gl.enableVertexAttribArray @vertexPosition
 
-    @mesh = @addObject()
+  updateSize: (width, height) ->
+    @canvas.width = width;
+    @canvas.height = height;
+    @gl.viewport 0, 0, @canvas.width, @canvas.height
 
-  # Example object
-  addObject: ->
-    mesh = new THREE.Mesh @geometry, @material
-    mesh.position = new Vector3(5, 0, 0)
-    @scene.add mesh
-    return mesh
-
-  #removeMesh: (mesh) ->
-  #  @scene.remove mesh
-
-  start: ->
-    @parentElement.appendChild @renderer.domElement
-
-    if @stats
-      @stats.domElement.style.position = 'absolute';
-      @stats.domElement.style.top = '0px';
-      @stats.domElement.style.right = '0px';
-      @parentElement.appendChild @stats.domElement
+  createShader: (source, type) ->
+    gl = @gl
+    shader = gl.createShader(type)
+    gl.shaderSource shader, source
+    gl.compileShader shader
+    if not gl.getShaderParameter(shader, gl.COMPILE_STATUS)
+      error = gl.getShaderInfoLog(shader)
+      throw new Error("compile failed: #{error}")
+    return shader
 
   animate: ->
 
   render: ->
-    #@planetMesh.translateX .01
-    @renderer.render @scene, @camera
-    if @stats
-      @stats.update()
+    gl = @gl
+    gl.clearColor .1, 0.5, .5, 1.0
+    gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
 
-   setCamera: (x, y, z) ->
-     @cameraMatrix = new Matrix4()
-     @cameraMatrix.setPosition x, y, z
-     @camera.applyMatrix(@cameraMatrix)
+    gl.useProgram @program
+    gl.uniform2f @uniforms.resolution, @canvas.width, @canvas.height
+
+    gl.bindBuffer gl.ARRAY_BUFFER, @vertexBuffer
+    gl.vertexAttribPointer @vertexPosition, 2, gl.FLOAT, false, 0, 0
+
+    @gl.drawArrays gl.TRIANGLES, 0, 6
