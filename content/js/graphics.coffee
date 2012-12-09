@@ -44,7 +44,7 @@ class @Graphics
 
     gl = @gl = @canvas.getContext('experimental-webgl') || @canvas.getContext('webgl')
     if not gl
-      throw new Error('WebGL not supported')
+      throw type: 'NoWebGL', message: 'WebGL not supported'
 
     # Create vertex buffer (2 triangles)
     @vertexBuffer = gl.createBuffer()
