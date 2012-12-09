@@ -51,6 +51,32 @@ unless $testing
   route '/test/*' do end
 end
 
+compile 'assets/audio/*' do
+  if item[:extension] == 'wav'
+    filter :oggenc
+  end
+end
+route 'assets/audio/*' do
+  if item[:extension] == 'wav'
+    item.identifier.chop + '.ogg'
+  else
+    item.identifier.chop + '.' + item[:extension]
+  end
+end
+
+compile 'assets/audio/*', :rep => :mp3 do
+  if item[:extension] == 'wav'
+    filter :mp3enc
+  end
+end
+route 'assets/audio/*', :rep => :mp3 do
+  if item[:extension] == 'wav'
+    item.identifier.chop + '.mp3'
+  else
+    item.identifier.chop + '.' + item[:extension]
+  end
+end
+
 compile '*' do
   if item[:extension] == 'html'
     filter :erb

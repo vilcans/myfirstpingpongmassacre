@@ -56,3 +56,23 @@ module JavaScript
 end
 
 include JavaScript
+
+class OggEncFilter < Nanoc::Filter
+  identifier :oggenc
+  type :binary => :binary
+  def run(filename, params={})
+    r = `oggenc -o #{output_filename} #{filename}`
+    return r if $?.exitstatus == 0
+    raise "make-level failed: #{$?}"
+  end
+end
+
+class Mp3EncFilter < Nanoc::Filter
+  identifier :mp3enc
+  type :binary => :binary
+  def run(filename, params={})
+    r = `lame #{filename} #{output_filename}`
+    return r if $?.exitstatus == 0
+    raise "make-level failed: #{$?}"
+  end
+end
