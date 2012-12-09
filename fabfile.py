@@ -31,16 +31,16 @@ def check_working_dir_clean():
     # http://stackoverflow.com/questions/5139290/how-to-check-if-theres-nothing-to-be-committed-in-the-current-branch
     with settings(warn_only=True):
         if not local('git diff --stat --exit-code').succeeded:
-            abort('You have unstaged changes')
+            abort('You have unstaged changes: to ignore, run with check_clean=no')
         if not local('git diff --cached --stat --exit-code').succeeded:
-            abort('Your index contains uncommitted changes')
+            abort('Your index contains uncommitted changes: to ignore, run with check_clean=no')
 
         r = local(
             'git ls-files --other --exclude-standard --directory',
             capture=True
         )
         if r != '':
-            abort('Untracked files exist')
+            abort('Untracked files exist: to ignore, run with check_clean=no')
 
 def get_hash():
     """Get the Git hash for the current version."""
@@ -52,12 +52,13 @@ def clean_build():
     local('NANOC_ENV=production nanoc')
 
 @task
-def release(version=None):
+def release(version=None, check_clean='yes'):
     """Creates and releases the current code.
     Takes an optional version string as parameter.
 
     """
-    check_working_dir_clean()
+    if check_clean == 'no':
+        check_working_dir_clean()
     clean_build()
     release_only(version)
 
