@@ -13,10 +13,7 @@ class @Game
     @clock = new Clock
 
   init: (onFinished) ->
-    @graphics.init()
-    #@graphics.loadAssets =>
-      #@map = new Map(@graphics.waterImage)
-    onFinished()
+    @graphics.init onFinished
 
   start: ->
     $(@eventsElement)

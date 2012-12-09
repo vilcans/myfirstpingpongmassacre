@@ -16,9 +16,13 @@ precision highp float;
 #endif
 
 uniform vec2 resolution;
+uniform sampler2D diffuseMap;
 
 void main() {
-  gl_FragColor = vec4(gl_FragCoord.xy / resolution, .0, 1.0);
+  vec2 normPoint = gl_FragCoord.xy / resolution.y;
+  //gl_FragColor = vec4(normPoint, .0, 1.0);
+  vec4 texel = texture2D(diffuseMap, normPoint);
+  gl_FragColor = texel;
 }
 """
 
@@ -31,7 +35,9 @@ class @Graphics
     @buffer = null
     @uniforms = {}
 
-  init: ->
+  init: (onFinished) ->
+    callbacks = new Callbacks(onFinished)
+
     @parentElement.appendChild @canvas
     @canvas.width = @parentElement.clientWidth
     @canvas.height = @parentElement.clientHeight
@@ -68,6 +74,22 @@ class @Graphics
 
     @vertexPosition = gl.getAttribLocation(program, 'position')
     gl.enableVertexAttribArray @vertexPosition
+
+    @uniforms.diffuseMap = gl.getUniformLocation(program, 'diffuseMap')
+
+    @texture = gl.createTexture()
+    gl.pixelStorei gl.UNPACK_FLIP_Y_WEBGL, true
+    image = new Image()
+    image.src = 'assets/textures/test.png'
+    image.onload = callbacks.add =>
+      gl.bindTexture gl.TEXTURE_2D, @texture
+      gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST
+      #gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
+      #gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
+      #gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST
+      #gl.generateMipmap gl.TEXTURE_2D
 
   updateSize: (width, height) ->
     @canvas.width = width;
