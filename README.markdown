@@ -5,7 +5,7 @@ but it uses nanoc for building.
 
 # Set up environment
 
-    gem install nanoc coffee-script uglifier kramdown mime-types therubyracer rack
+    gem install nanoc coffee-script uglifier kramdown mime-types therubyracer rack less
 
 Do we also need adsf?
 
