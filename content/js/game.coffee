@@ -1,6 +1,3 @@
-FPS = 60
-FRAME_LENGTH = 1 / FPS
-
 class @Game
   constructor: ({
     # Element which will get the game canvas as a child
@@ -16,8 +13,7 @@ class @Game
 
     @graphics = new Graphics(parentElement, document.location.hash == '#stats')
     @keyboard = new Keyboard
-
-    @totalTime = 0
+    @clock = new Clock
 
   init: (onFinished) ->
     @graphics.loadAssets =>
@@ -46,6 +42,7 @@ class @Game
     else
       console.log 'starting animation'
       @animating = true
+      @clock.reset()
       requestAnimationFrame @animationFrame
 
   stopAnimation: ->
@@ -66,8 +63,8 @@ class @Game
     @animate()
 
   animate: =>
-    deltaTime = FRAME_LENGTH
-    @totalTime += deltaTime
+    deltaTime = @clock.tick()
+    @graphics.animate deltaTime
 
     @graphics.mesh.rotation = new THREE.Vector3(@totalTime, 0, 0)
     @graphics.mesh.updateMatrix()

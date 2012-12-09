@@ -119,6 +119,8 @@ class @Graphics
       @stats.domElement.style.right = '0px';
       @parentElement.appendChild @stats.domElement
 
+  animate: ->
+
   render: ->
     #@planetMesh.translateX .01
     @renderer.render @scene, @camera
