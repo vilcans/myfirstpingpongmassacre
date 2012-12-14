@@ -1,4 +1,4 @@
-$(document).ready ->
+$(document).ready =>
   gameElement = document.getElementById('game')
   try
     @game = new Game
