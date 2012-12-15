@@ -51,9 +51,9 @@ class @Game
       @startAnimation()
 
   animationFrame: =>
+    @animate()
     if @animating
       requestAnimationFrame @animationFrame
-    @animate()
 
   animate: =>
     deltaTime = @clock.tick()
