@@ -52,6 +52,20 @@ void main() {
 }
 """
 
+particleRadius = Math.sqrt(2) * 1
+numberOfParticleSegments = 4
+verticesPerParticle = 6
+
+particleCoordsX = []
+particleCoordsY = []
+for i in [0...numberOfParticleSegments]
+  angle = Math.PI * 2 / numberOfParticleSegments * (i + .5)
+  particleCoordsX[i] = Math.sin(angle) * particleRadius
+  particleCoordsY[i] = Math.cos(angle) * particleRadius
+
+console.log particleCoordsX
+console.log particleCoordsY
+
 MAX_PARTICLES = 100
 
 glDecorator = (functionName, args) ->
@@ -106,13 +120,12 @@ class @Graphics
 
     # PARTICLES
     @particlesBuffer = gl.createBuffer()
-    @particlesArray = new Float32Array(MAX_PARTICLES * 6)
+    @particlesArray = new Float32Array(MAX_PARTICLES * 2 * verticesPerParticle)
 
     @particlesProgram = @createProgram(particleVertexShader, particleFragmentShader,
       uniforms: ['resolution'],
       attributes: ['position']
     )
-    #gl.useProgram @particlesProgram.handle
     gl.enableVertexAttribArray @particlesProgram.attributes.position
 
     # TEXTURES
@@ -195,23 +208,25 @@ class @Graphics
 
     #console.log 'drawing', particles.length
 
-    angle0 = Math.PI * 2 / 3 * 0
-    angle1 = Math.PI * 2 / 3 * 1
-    angle2 = Math.PI * 2 / 3 * 2
-
     gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
     i = 0
     arr = @particlesArray
-    r = 2
     startIndex = 0
     for particleIndex in [Math.max(0, particles.length - MAX_PARTICLES)...particles.length]
       particle = particles[particleIndex]
-      arr[i++] = particle.x + r * Math.sin(angle0)
-      arr[i++] = particle.y + r * Math.cos(angle0)
-      arr[i++] = particle.x + r * Math.sin(angle1)
-      arr[i++] = particle.y + r * Math.cos(angle1)
-      arr[i++] = particle.x + r * Math.sin(angle2)
-      arr[i++] = particle.y + r * Math.cos(angle2)
+      arr[i++] = particle.x + particleCoordsX[0]
+      arr[i++] = particle.y + particleCoordsY[0]
+      arr[i++] = particle.x + particleCoordsX[1]
+      arr[i++] = particle.y + particleCoordsY[1]
+      arr[i++] = particle.x + particleCoordsX[2]
+      arr[i++] = particle.y + particleCoordsY[2]
+      arr[i++] = particle.x + particleCoordsX[0]
+      arr[i++] = particle.y + particleCoordsY[0]
+      arr[i++] = particle.x + particleCoordsX[2]
+      arr[i++] = particle.y + particleCoordsY[2]
+      arr[i++] = particle.x + particleCoordsX[3]
+      arr[i++] = particle.y + particleCoordsY[3]
+    vertexCount = i / 2
 
     gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.STATIC_DRAW
 
@@ -221,7 +236,7 @@ class @Graphics
     gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
     gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.STATIC_DRAW
     gl.vertexAttribPointer @particlesProgram.attributes.position, 2, gl.FLOAT, false, 0, 0
-    gl.drawArrays gl.TRIANGLES, 0, Math.min(particles.length, MAX_PARTICLES) * 3
+    gl.drawArrays gl.TRIANGLES, 0, vertexCount
 
     error = gl.getError()
     if error
