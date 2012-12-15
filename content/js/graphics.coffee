@@ -47,8 +47,8 @@ class @Graphics
       throw type: 'NoWebGL', message: 'WebGL not supported'
 
     # Create vertex buffer (2 triangles)
-    @vertexBuffer = gl.createBuffer()
-    gl.bindBuffer gl.ARRAY_BUFFER, @vertexBuffer
+    @backgroundQuadBuffer = gl.createBuffer()
+    gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
     gl.bufferData gl.ARRAY_BUFFER, new Float32Array(
       [ -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0 ]
     ), gl.STATIC_DRAW
@@ -119,4 +119,6 @@ class @Graphics
     gl.bindBuffer gl.ARRAY_BUFFER, @vertexBuffer
     gl.vertexAttribPointer @vertexPosition, 2, gl.FLOAT, false, 0, 0
 
+    gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
+    gl.vertexAttribPointer @program.attributes.position, 2, gl.FLOAT, false, 0, 0
     @gl.drawArrays gl.TRIANGLES, 0, 6
