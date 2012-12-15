@@ -1,3 +1,6 @@
+
+tempVec2 = vec2.create()
+
 class @Game
   constructor: ({
     # Element which will get the game canvas as a child
@@ -88,13 +91,18 @@ class @Game
     @mouseX = event.clientX
     @mouseY = event.clientY
 
+    dir = tempVec2
+    dir[0] = event.clientX
+    dir[1] = @graphics.canvas.height - event.clientY
+    vec2.subtract dir, tweaks.missileOrigin, dir
+    vec2.scale dir, tweaks.projectileVelocity / vec2.length(dir)
+    @addParticle tweaks.missileOrigin[0], tweaks.missileOrigin[1], dir[0], dir[1]
+
     $(@eventsElement).mousemove @onMouseDrag
     event.preventDefault()
 
   onMouseUp: (event) =>
-    x = event.clientX
-    y = @graphics.canvas.height - event.clientY
-    @addParticle x, y
+    #@map.explode x, y, 5, (x, y, vx, vy) => @addParticle(x, y, vx, vy)
     @dragging = false
 
     $(@eventsElement).off 'mousemove', @onMouseDrag
@@ -106,8 +114,7 @@ class @Game
     if @dragging
       dx = x - @mouseX
       dy = y - @mouseY
-      #@graphics.camera.translateZ dy
-      @addParticle x, @graphics.canvas.height - y, dx, -dy
+      #@addParticle x, @graphics.canvas.height - y, dx, -dy
 
     @mouseX = x
     @mouseY = y
