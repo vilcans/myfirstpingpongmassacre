@@ -33,7 +33,6 @@ class @Graphics
     @canvas = document.createElement 'canvas'
     @gl = null
     @buffer = null
-    @uniforms = {}
 
   init: (onFinished) ->
     callbacks = new Callbacks(onFinished)
@@ -53,29 +52,19 @@ class @Graphics
       [ -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0 ]
     ), gl.STATIC_DRAW
 
+
     @updateSize @canvas.width, @canvas.height
 
-    program = gl.createProgram()
-    vs = @createShader(vertexShader, gl.VERTEX_SHADER)
-    fs = @createShader(fragmentShader, gl.FRAGMENT_SHADER)
-    gl.attachShader program, vs
-    gl.attachShader program, fs
-    #gl.deleteShader vs
-    #gl.deleteShader fs
-    gl.linkProgram program
-    if not gl.getProgramParameter(program, gl.LINK_STATUS)
-      error = gl.getProgramInfoLog program
-      throw new Error('Linking failed: ' + error)
-
-    @uniforms.resolution = gl.getUniformLocation(program, 'resolution')
-
-    @program = program
-    gl.useProgram @program
-
-    @vertexPosition = gl.getAttribLocation(program, 'position')
-    gl.enableVertexAttribArray @vertexPosition
-
-    @uniforms.diffuseMap = gl.getUniformLocation(program, 'diffuseMap')
+    @program = program = @createProgram(vertexShader, fragmentShader,
+      uniforms: [
+        'resolution',
+        'diffuseMap',
+      ],
+      attributes: [
+        'position',
+      ]
+    )
+    gl.enableVertexAttribArray @program.attributes.position
 
     @texture = gl.createTexture()
     gl.pixelStorei gl.UNPACK_FLIP_Y_WEBGL, true
@@ -90,6 +79,37 @@ class @Graphics
       #gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
       #gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST
       #gl.generateMipmap gl.TEXTURE_2D
+
+  createProgram: (vertexShader, fragmentShader, {uniforms, attributes}) ->
+    gl = @gl
+    handle = gl.createProgram()
+    vs = @createShader(vertexShader, gl.VERTEX_SHADER)
+    fs = @createShader(fragmentShader, gl.FRAGMENT_SHADER)
+    gl.attachShader handle, vs
+    gl.attachShader handle, fs
+    #gl.deleteShader vs
+    #gl.deleteShader fs
+    gl.linkProgram handle
+    if not gl.getProgramParameter(handle, gl.LINK_STATUS)
+      error = gl.getProgramInfoLog handle
+      throw new Error('Linking failed: ' + error)
+
+    program =
+      handle: handle
+      uniforms: {}
+      attributes: {}
+
+    for name in uniforms or []
+      program.uniforms[name] = gl.getUniformLocation(handle, name)
+      if program.uniforms[name] == -1
+        throw new Error("Could not get uniform #{name}")
+
+    for name in attributes or []
+      program.attributes[name] = gl.getAttribLocation(handle, name)
+      if program.uniforms[name] == -1
+        throw new Error("Could not get attribute #{name}")
+
+    return program
 
   updateSize: (width, height) ->
     @canvas.width = width;
@@ -113,11 +133,8 @@ class @Graphics
     gl.clearColor .1, 0.5, .5, 1.0
     gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
 
-    gl.useProgram @program
-    gl.uniform2f @uniforms.resolution, @canvas.width, @canvas.height
-
-    gl.bindBuffer gl.ARRAY_BUFFER, @vertexBuffer
-    gl.vertexAttribPointer @vertexPosition, 2, gl.FLOAT, false, 0, 0
+    gl.useProgram @program.handle
+    gl.uniform2f @program.uniforms.resolution, @canvas.width, @canvas.height
 
     gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
     gl.vertexAttribPointer @program.attributes.position, 2, gl.FLOAT, false, 0, 0
