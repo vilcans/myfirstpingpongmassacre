@@ -19,7 +19,7 @@ class @Game
 
   init: (onFinished) ->
     @graphics.init =>
-      @map = new Map(@graphics.collisionImage)
+      @map = new Map(@graphics.collisionImage, @graphics.worldImage)
       onFinished()
 
   start: ->

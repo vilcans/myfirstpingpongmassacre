@@ -1,15 +1,18 @@
 class @Map
-  constructor: (collisionImage) ->
-    @image = collisionImage
+  constructor: (collisionImage, worldImage) ->
+    @canvas = document.createElement('canvas')
+    @width = @canvas.width = collisionImage.width;
+    @height = @canvas.height = collisionImage.height;
+    @context = @canvas.getContext('2d')
+
     @createCollisionMap collisionImage
 
-  createCollisionMap: (image) ->
-    @canvas = canvas = document.createElement('canvas')
-    @width = canvas.width = image.width;
-    @height = canvas.height = image.height;
-    context = canvas.getContext('2d')
-    context.drawImage image, 0, 0
-    @collisionData = context.getImageData(0, 0, image.width, image.height)
+    @context.drawImage worldImage, 0, 0
+    @colorData = @context.getImageData(0, 0, @width, @height)
+
+  createCollisionMap: (collisionImage) ->
+    @context.drawImage collisionImage, 0, 0
+    @collisionData = @context.getImageData(0, 0, @width, @height)
 
   isOccupied: (x, y) ->
     # Data is in order RGBA
@@ -23,13 +26,16 @@ class @Map
         ax = x + dx
         index = @getIndex(ax, ay)
         if @collisionData.data[index] < 128
-          console.log 'addParticle', ax, ay, dx, dy
+          #console.log 'addParticle', ax, ay, dx, dy
           addParticle
             x: ax,
             y: ay,
             vx: dx
             vy: dy
             explosive: false
+            r: @colorData[index] / 255
+            g: @colorData[index + 1] / 255
+            b: @colorData[index + 2] / 255
           @collisionData.data[index] = 255
     return
 

@@ -119,23 +119,27 @@ class @Graphics
 
     # PARTICLES
     @particlesBuffer = gl.createBuffer()
-    @particlesArray = new Float32Array(MAX_PARTICLES * 2 * verticesPerParticle)
+    @particlesArray = new Float32Array(MAX_PARTICLES * floatsPerParticle)
 
     @particlesProgram = @createProgram(particleVertexShader, particleFragmentShader,
       uniforms: ['resolution'],
-      attributes: ['position']
+      attributes: [
+        'position',
+        #'color'
+      ]
     )
     gl.enableVertexAttribArray @particlesProgram.attributes.position
+    #gl.enableVertexAttribArray @particlesProgram.attributes.color
 
     # TEXTURES
 
     @texture = gl.createTexture()
     gl.pixelStorei gl.UNPACK_FLIP_Y_WEBGL, true
-    image = new Image()
-    image.src = 'assets/level.png'
-    image.onload = callbacks.add =>
+    @worldImage = new Image()
+    @worldImage.src = 'assets/level.png'
+    @worldImage.onload = callbacks.add =>
       gl.bindTexture gl.TEXTURE_2D, @texture
-      gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image
+      gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, @worldImage
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST
       #gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
