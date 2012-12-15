@@ -12,8 +12,6 @@ else
   now = ->
     +(new Date) / 1000
 
-window.times = []
-
 class @Clock
   constructor: (@maxTickLength=.1) ->
     @numberOfTicks = 0
@@ -31,8 +29,9 @@ class @Clock
     @lastTickLength = length
     @lastTick = newTime
     @numberOfTicks++
-    window.times.push length
     return length
 
   getElapsedTime: ->
     return @lastTick - @startTime
+
+  now = now
