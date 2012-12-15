@@ -89,6 +89,9 @@ class @Game
           dp.vx = sp.vx
           dp.vy = sp.vy
           dp.explosive = sp.explosive
+          dp.r = sp.r
+          dp.g = sp.g
+          dp.b = sp.b
           di++
       si++
     @particles.length = di
@@ -110,6 +113,7 @@ class @Game
       vx: dir[0]
       vy: dir[1]
       explosive: true
+      r: 1.0, g: .5, b: 0
 
     $(@eventsElement).mousemove @onMouseDrag
     event.preventDefault()

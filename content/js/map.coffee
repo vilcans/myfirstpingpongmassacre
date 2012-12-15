@@ -26,16 +26,15 @@ class @Map
         ax = x + dx
         index = @getIndex(ax, ay)
         if @collisionData.data[index] < 128
-          #console.log 'addParticle', ax, ay, dx, dy
           addParticle
             x: ax,
             y: ay,
             vx: dx
             vy: dy
             explosive: false
-            r: @colorData[index] / 255
-            g: @colorData[index + 1] / 255
-            b: @colorData[index + 2] / 255
+            r: @colorData.data[index] / 255
+            g: @colorData.data[index + 1] / 255
+            b: @colorData.data[index + 2] / 255
           @collisionData.data[index] = 255
     return
 

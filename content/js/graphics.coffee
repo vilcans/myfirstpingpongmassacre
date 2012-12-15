@@ -33,12 +33,15 @@ precision highp float;
 
 uniform vec2 resolution;
 attribute vec3 position;
+attribute vec3 color;
+varying vec3 v_color;
 
 void main() {
   gl_Position = vec4(2.0 * (position.xy / resolution - vec2(.5)), .5, 1.0);
   float dummy = position.x + resolution.x;
   //gl_Position = vec4(dummy * 1e-12, .0, .0, 1.0);
   //gl_Position = vec4(.5, .5, .5, 1.0);
+  v_color = color;
 }
 """
 
@@ -47,8 +50,11 @@ particleFragmentShader = """
 precision highp float;
 #endif
 
+varying vec3 v_color;
+
 void main() {
-  gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+  //gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+  gl_FragColor = vec4(v_color, 1.0);
 }
 """
 
@@ -115,7 +121,6 @@ class @Graphics
         'position',
       ]
     )
-    gl.enableVertexAttribArray @backgroundProgram.attributes.position
 
     # PARTICLES
     @particlesBuffer = gl.createBuffer()
@@ -125,11 +130,9 @@ class @Graphics
       uniforms: ['resolution'],
       attributes: [
         'position',
-        #'color'
+        'color'
       ]
     )
-    gl.enableVertexAttribArray @particlesProgram.attributes.position
-    #gl.enableVertexAttribArray @particlesProgram.attributes.color
 
     # TEXTURES
 
@@ -208,6 +211,8 @@ class @Graphics
     gl.disable gl.CULL_FACE
 
     gl.useProgram @backgroundProgram.handle
+    gl.enableVertexAttribArray @backgroundProgram.attributes.position
+
     gl.uniform2f @backgroundProgram.uniforms.resolution, @canvas.width, @canvas.height
 
     gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
@@ -223,27 +228,50 @@ class @Graphics
       particle = particles[particleIndex]
       arr[i++] = particle.x + particleCoordsX[0]
       arr[i++] = particle.y + particleCoordsY[0]
+      arr[i++] = particle.r
+      arr[i++] = particle.g
+      arr[i++] = particle.b
       arr[i++] = particle.x + particleCoordsX[1]
       arr[i++] = particle.y + particleCoordsY[1]
+      arr[i++] = particle.r
+      arr[i++] = particle.g
+      arr[i++] = particle.b
       arr[i++] = particle.x + particleCoordsX[2]
       arr[i++] = particle.y + particleCoordsY[2]
+      arr[i++] = particle.r
+      arr[i++] = particle.g
+      arr[i++] = particle.b
       arr[i++] = particle.x + particleCoordsX[0]
       arr[i++] = particle.y + particleCoordsY[0]
+      arr[i++] = particle.r
+      arr[i++] = particle.g
+      arr[i++] = particle.b
       arr[i++] = particle.x + particleCoordsX[2]
       arr[i++] = particle.y + particleCoordsY[2]
+      arr[i++] = particle.r
+      arr[i++] = particle.g
+      arr[i++] = particle.b
       arr[i++] = particle.x + particleCoordsX[3]
       arr[i++] = particle.y + particleCoordsY[3]
+      arr[i++] = particle.r
+      arr[i++] = particle.g
+      arr[i++] = particle.b
       vertexCount += 6
     floatCount = i
 
     gl.useProgram @particlesProgram.handle
+
+    gl.enableVertexAttribArray @particlesProgram.attributes.position
+    gl.enableVertexAttribArray @particlesProgram.attributes.color
+
     gl.uniform2f @particlesProgram.uniforms.resolution, @canvas.width, @canvas.height
 
     gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
     gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.STATIC_DRAW
     #gl.bufferData gl.ARRAY_BUFFER, @particlesArray.subarray(0, floatCount), gl.STATIC_DRAW
     #gl.bufferSubData gl.ARRAY_BUFFER, 0, @particlesArray.subarray(0, vertexCount * 2)
-    gl.vertexAttribPointer @particlesProgram.attributes.position, 2, gl.FLOAT, false, 2 * sizeOfFloat, 0
+    gl.vertexAttribPointer @particlesProgram.attributes.position, 2, gl.FLOAT, false, 5 * sizeOfFloat, 0
+    gl.vertexAttribPointer @particlesProgram.attributes.color, 3, gl.FLOAT, false, 5 * sizeOfFloat, 2 * sizeOfFloat
     gl.drawArrays gl.TRIANGLES, 0, vertexCount
 
     error = gl.getError()
