@@ -174,7 +174,7 @@ class @Graphics
 
     for name in attributes or []
       program.attributes[name] = gl.getAttribLocation(handle, name)
-      if program.uniforms[name] == -1
+      if program.attributes[name] == -1
         throw new Error("Could not get attribute #{name}")
 
     return program
