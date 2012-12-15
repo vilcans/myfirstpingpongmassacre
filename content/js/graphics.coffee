@@ -78,8 +78,9 @@ class @Graphics
     if not gl
       throw type: 'NoWebGL', message: 'WebGL not supported'
 
-    WebGLDebugUtils.init gl
-    gl = WebGLDebugUtils.makeDebugContext(gl, undefined, glDecorator)
+    if window.location.search == '?debug'
+      WebGLDebugUtils.init gl
+      gl = WebGLDebugUtils.makeDebugContext(gl, undefined, glDecorator)
 
     @gl = gl
     @updateSize @canvas.width, @canvas.height
