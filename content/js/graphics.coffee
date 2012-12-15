@@ -56,7 +56,7 @@ sizeOfFloat = 4
 
 particleRadius = Math.sqrt(2) * 1
 numberOfParticleSegments = 4
-verticesPerParticle = 6
+floatsPerParticle = 6 * 2   # xyrgb * 6 vertices
 
 particleCoordsX = []
 particleCoordsY = []
