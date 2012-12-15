@@ -74,14 +74,22 @@ class @Game
       dp.x = sp.x + sp.vx
       dp.y = sp.y + sp.vy
       dp.vy = sp.vy - .1
+
       if dp.x > @graphics.canvas.width or dp.x < 0 or dp.y < 0
         #console.log 'particle died:', dp
-      else if @map.isOccupied(Math.floor(dp.x), Math.floor(dp.y))
-        #console.log 'hit!'
       else
-        dp.vx = sp.vx
-        dp.vy = sp.vy
-        di++
+        intx = Math.floor(dp.x)
+        inty = Math.floor(dp.y)
+        if @map.isOccupied(intx, inty)
+          if sp.explosive
+            @map.explode intx, inty, 5, (x, y, vx, vy) =>
+              #console.log 'add particle', x, y
+              @addParticle(x, y, vx, vy)
+        else
+          dp.vx = sp.vx
+          dp.vy = sp.vy
+          dp.explosive = sp.explosive
+          di++
       si++
     @particles.length = di
     @graphics.render @particles
@@ -96,13 +104,13 @@ class @Game
     dir[1] = @graphics.canvas.height - event.clientY
     vec2.subtract dir, tweaks.missileOrigin, dir
     vec2.scale dir, tweaks.projectileVelocity / vec2.length(dir)
-    @addParticle tweaks.missileOrigin[0], tweaks.missileOrigin[1], dir[0], dir[1]
+    p = @addParticle tweaks.missileOrigin[0], tweaks.missileOrigin[1], dir[0], dir[1]
+    p.explosive = true
 
     $(@eventsElement).mousemove @onMouseDrag
     event.preventDefault()
 
   onMouseUp: (event) =>
-    #@map.explode x, y, 5, (x, y, vx, vy) => @addParticle(x, y, vx, vy)
     @dragging = false
 
     $(@eventsElement).off 'mousemove', @onMouseDrag
@@ -122,8 +130,10 @@ class @Game
     event.preventDefault()
 
   addParticle: (x, y, vx=0, vy=0) ->
-    @particles.push
+    p =
       x: x
       y: y
       vx: vx
       vy: vy
+    @particles.push p
+    return p

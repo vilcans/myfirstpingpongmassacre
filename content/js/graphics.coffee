@@ -65,10 +65,7 @@ for i in [0...numberOfParticleSegments]
   particleCoordsX[i] = Math.sin(angle) * particleRadius
   particleCoordsY[i] = Math.cos(angle) * particleRadius
 
-console.log particleCoordsX
-console.log particleCoordsY
-
-MAX_PARTICLES = 100
+MAX_PARTICLES = 1000
 
 glDecorator = (functionName, args) ->
   for ii in [0...args.length]
