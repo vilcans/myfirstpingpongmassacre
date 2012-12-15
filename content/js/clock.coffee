@@ -7,10 +7,10 @@ else if window.performance and window.performance.webkitNow
     window.performance.webkitNow() / 1000
 else if Date.now
   now = ->
-    Date.now() / 1000
+    Date.now() / 1000 - 1355591199
 else
   now = ->
-    +(new Date) / 1000
+    +(new Date) / 1000 - 1355591199
 
 class @Clock
   constructor: (@maxTickLength=.1) ->
@@ -34,4 +34,5 @@ class @Clock
   getElapsedTime: ->
     return @lastTick - @startTime
 
-  now = now
+
+Clock.now = now
