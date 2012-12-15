@@ -18,7 +18,7 @@ from fabric.contrib.files import exists
 #    of at least three numbers. So after release 1.0, there's 1.0.1.
 
 # Edit this! Should be unique.
-project_name = 'site-start'
+project_name = 'LD25'
 deploy_host = repo_host = 'vilcon.se'
 
 install_dir = '/opt/%s' % project_name
@@ -104,7 +104,7 @@ def release_only(version=None):
         abort('Tag %s already exists in local repo' % tag)
 
     set_version_number(version)
-    git('add -fA site/ version.txt')
+    git('add -fA site/ version.txt nginx.conf')
     message = 'Version %s, commit %s' % (version, commit)
     git('diff --staged --stat')
     print(green('This will be committed as ' + message))
