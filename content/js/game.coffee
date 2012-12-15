@@ -73,7 +73,7 @@ class @Game
       dp = @particles[di]
       dp.x = sp.x + sp.vx
       dp.y = sp.y + sp.vy
-      dp.vy = sp.vy - .1
+      dp.vy = sp.vy + tweaks.gravity
 
       if dp.x > @graphics.canvas.width or dp.x < 0 or dp.y < 0
         #console.log 'particle died:', dp
