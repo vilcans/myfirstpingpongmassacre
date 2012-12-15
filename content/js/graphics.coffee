@@ -201,8 +201,10 @@ class @Graphics
     gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
     i = 0
     arr = @particlesArray
-    r = 1
-    for particle in particles
+    r = 2
+    startIndex = 0
+    for particleIndex in [Math.max(0, particles.length - MAX_PARTICLES)...particles.length]
+      particle = particles[particleIndex]
       arr[i++] = particle.x + r * Math.sin(angle0)
       arr[i++] = particle.y + r * Math.cos(angle0)
       arr[i++] = particle.x + r * Math.sin(angle1)
@@ -218,7 +220,7 @@ class @Graphics
     gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
     gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.STATIC_DRAW
     gl.vertexAttribPointer @particlesProgram.attributes.position, 2, gl.FLOAT, false, 0, 0
-    gl.drawArrays gl.TRIANGLES, 0, particles.length * 3
+    gl.drawArrays gl.TRIANGLES, 0, Math.min(particles.length, MAX_PARTICLES) * 3
 
     error = gl.getError()
     if error
