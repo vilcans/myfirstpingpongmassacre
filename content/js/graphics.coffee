@@ -19,7 +19,7 @@ uniform vec2 resolution;
 uniform sampler2D diffuseMap;
 
 void main() {
-  vec2 normPoint = gl_FragCoord.xy / resolution.y;
+  vec2 normPoint = gl_FragCoord.xy / resolution;
   //gl_FragColor = vec4(normPoint, .0, 1.0);
   vec4 texel = texture2D(diffuseMap, normPoint);
   gl_FragColor = texel;
@@ -80,7 +80,7 @@ class @Graphics
     @texture = gl.createTexture()
     gl.pixelStorei gl.UNPACK_FLIP_Y_WEBGL, true
     image = new Image()
-    image.src = 'assets/textures/test.png'
+    image.src = 'assets/level.png'
     image.onload = callbacks.add =>
       gl.bindTexture gl.TEXTURE_2D, @texture
       gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image
