@@ -103,16 +103,16 @@ class @Game
       dx = x - @mouseX
       dy = y - @mouseY
       #@graphics.camera.translateZ dy
+      @addParticle x, @graphics.canvas.height - y, dx, -dy
 
     @mouseX = x
     @mouseY = y
 
     event.preventDefault()
 
-  addParticle: (x, y) ->
+  addParticle: (x, y, vx=0, vy=0) ->
     @particles.push
       x: x
       y: y
-      vx: 0
-      vy: 0
-    console.log 'fire', x, y
+      vx: vx
+      vy: vy
