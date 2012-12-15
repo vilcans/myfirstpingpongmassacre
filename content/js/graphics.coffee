@@ -56,7 +56,7 @@ sizeOfFloat = 4
 
 particleRadius = Math.sqrt(2) * 1
 numberOfParticleSegments = 4
-floatsPerParticle = 6 * 2   # xyrgb * 6 vertices
+floatsPerParticle = 2 * 6   # xy * 6 vertices
 
 particleCoordsX = []
 particleCoordsY = []
@@ -219,7 +219,7 @@ class @Graphics
     gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
     i = 0
     arr = @particlesArray
-    startIndex = 0
+    vertexCount = 0
     for particleIndex in [Math.max(0, particles.length - MAX_PARTICLES)...particles.length]
       particle = particles[particleIndex]
       arr[i++] = particle.x + particleCoordsX[0]
@@ -234,7 +234,8 @@ class @Graphics
       arr[i++] = particle.y + particleCoordsY[2]
       arr[i++] = particle.x + particleCoordsX[3]
       arr[i++] = particle.y + particleCoordsY[3]
-    vertexCount = i / 2
+      vertexCount += 6
+    floatCount = i
 
     gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.STATIC_DRAW
 
@@ -242,7 +243,7 @@ class @Graphics
     gl.uniform2f @particlesProgram.uniforms.resolution, @canvas.width, @canvas.height
 
     gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
-    gl.bufferData gl.ARRAY_BUFFER, @particlesArray.subarray(0, vertexCount * 2), gl.STATIC_DRAW
+    gl.bufferData gl.ARRAY_BUFFER, @particlesArray.subarray(0, floatCount), gl.STATIC_DRAW
     #gl.bufferSubData gl.ARRAY_BUFFER, 0, @particlesArray.subarray(0, vertexCount * 2)
     gl.vertexAttribPointer @particlesProgram.attributes.position, 2, gl.FLOAT, false, 0, 0
     gl.drawArrays gl.TRIANGLES, 0, vertexCount
