@@ -12,6 +12,8 @@ class @Game
     @keyboard = new Keyboard
     @clock = new Clock
 
+    @particles = []
+
   init: (onFinished) ->
     @graphics.init onFinished
 
@@ -59,7 +61,7 @@ class @Game
     deltaTime = @clock.tick()
     @graphics.animate deltaTime
 
-    @graphics.render()
+    @graphics.render @particles
 
   onMouseDown: (event) =>
     @dragging = true
@@ -70,7 +72,11 @@ class @Game
     event.preventDefault()
 
   onMouseUp: (event) =>
+    x = event.clientX
+    y = @graphics.canvas.height - event.clientY
+    @addParticle x, y
     @dragging = false
+
     $(@eventsElement).off 'mousemove', @onMouseDrag
 
   onMouseDrag: (event) =>
@@ -86,3 +92,11 @@ class @Game
     @mouseY = y
 
     event.preventDefault()
+
+  addParticle: (x, y) ->
+    @particles.push
+      x: x
+      y: y
+      vx: 0
+      vy: 0
+    console.log 'fire', x, y

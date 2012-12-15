@@ -26,6 +26,34 @@ void main() {
 }
 """
 
+particleVertexShader = """
+#ifdef GL_ES
+precision highp float;
+#endif
+
+uniform vec2 resolution;
+attribute vec3 position;
+
+void main() {
+  gl_Position = vec4(2.0 * (position.xy / resolution - vec2(.5)), .5, 1.0);
+  float dummy = position.x + resolution.x;
+  //gl_Position = vec4(dummy * 1e-12, .0, .0, 1.0);
+  //gl_Position = vec4(.5, .5, .5, 1.0);
+}
+"""
+
+particleFragmentShader = """
+#ifdef GL_ES
+precision highp float;
+#endif
+
+void main() {
+  gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+}
+"""
+
+MAX_PARTICLES = 100
+
 glDecorator = (functionName, args) ->
   for ii in [0...args.length]
     if args[ii] == undefined
@@ -54,6 +82,9 @@ class @Graphics
     gl = WebGLDebugUtils.makeDebugContext(gl, undefined, glDecorator)
 
     @gl = gl
+    @updateSize @canvas.width, @canvas.height
+
+    # BACKGROUND
 
     @backgroundQuadBuffer = gl.createBuffer()
     gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
@@ -61,10 +92,7 @@ class @Graphics
       [ -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0 ]
     ), gl.STATIC_DRAW
 
-
-    @updateSize @canvas.width, @canvas.height
-
-    @program = program = @createProgram(vertexShader, fragmentShader,
+    @backgroundProgram = @createProgram(vertexShader, fragmentShader,
       uniforms: [
         'resolution',
         'diffuseMap',
@@ -73,7 +101,20 @@ class @Graphics
         'position',
       ]
     )
-    gl.enableVertexAttribArray @program.attributes.position
+    gl.enableVertexAttribArray @backgroundProgram.attributes.position
+
+    # PARTICLES
+    @particlesBuffer = gl.createBuffer()
+    @particlesArray = new Float32Array(MAX_PARTICLES * 6)
+
+    @particlesProgram = @createProgram(particleVertexShader, particleFragmentShader,
+      uniforms: ['resolution'],
+      attributes: ['position']
+    )
+    #gl.useProgram @particlesProgram.handle
+    gl.enableVertexAttribArray @particlesProgram.attributes.position
+
+    # TEXTURES
 
     @texture = gl.createTexture()
     gl.pixelStorei gl.UNPACK_FLIP_Y_WEBGL, true
@@ -137,14 +178,48 @@ class @Graphics
 
   animate: ->
 
-  render: ->
+  render: (particles) ->
     gl = @gl
     gl.clearColor .1, 0.5, .5, 1.0
     gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
 
-    gl.useProgram @program.handle
-    gl.uniform2f @program.uniforms.resolution, @canvas.width, @canvas.height
+    gl.disable gl.CULL_FACE
+
+    gl.useProgram @backgroundProgram.handle
+    gl.uniform2f @backgroundProgram.uniforms.resolution, @canvas.width, @canvas.height
 
     gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
-    gl.vertexAttribPointer @program.attributes.position, 2, gl.FLOAT, false, 0, 0
-    @gl.drawArrays gl.TRIANGLES, 0, 6
+    gl.vertexAttribPointer @backgroundProgram.attributes.position, 2, gl.FLOAT, false, 0, 0
+    gl.drawArrays gl.TRIANGLES, 0, 6
+
+    #console.log 'drawing', particles.length
+
+    angle0 = Math.PI * 2 / 3 * 0
+    angle1 = Math.PI * 2 / 3 * 1
+    angle2 = Math.PI * 2 / 3 * 2
+
+    gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
+    i = 0
+    arr = @particlesArray
+    r = 1
+    for particle in particles
+      arr[i++] = particle.x + r * Math.sin(angle0)
+      arr[i++] = particle.y + r * Math.cos(angle0)
+      arr[i++] = particle.x + r * Math.sin(angle1)
+      arr[i++] = particle.y + r * Math.cos(angle1)
+      arr[i++] = particle.x + r * Math.sin(angle2)
+      arr[i++] = particle.y + r * Math.cos(angle2)
+
+    gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.STATIC_DRAW
+
+    gl.useProgram @particlesProgram.handle
+    gl.uniform2f @particlesProgram.uniforms.resolution, @canvas.width, @canvas.height
+
+    gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
+    gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.STATIC_DRAW
+    gl.vertexAttribPointer @particlesProgram.attributes.position, 2, gl.FLOAT, false, 0, 0
+    gl.drawArrays gl.TRIANGLES, 0, particles.length * 3
+
+    error = gl.getError()
+    if error
+      throw new Error("GL error: #{error}")
