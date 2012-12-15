@@ -24,7 +24,12 @@ class @Map
         index = @getIndex(ax, ay)
         if @collisionData.data[index] < 128
           console.log 'addParticle', ax, ay, dx, dy
-          addParticle ax, ay, dx, dy
+          addParticle
+            x: ax,
+            y: ay,
+            vx: dx
+            vy: dy
+            explosive: false
           @collisionData.data[index] = 255
     return
 

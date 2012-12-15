@@ -82,9 +82,9 @@ class @Game
         inty = Math.floor(dp.y)
         if @map.isOccupied(intx, inty)
           if sp.explosive
-            @map.explode intx, inty, 5, (x, y, vx, vy) =>
+            @map.explode intx, inty, 5, (p) =>
               #console.log 'add particle', x, y
-              @addParticle(x, y, vx, vy)
+              @addParticle p
         else
           dp.vx = sp.vx
           dp.vy = sp.vy
@@ -104,8 +104,12 @@ class @Game
     dir[1] = @graphics.canvas.height - event.clientY
     vec2.subtract dir, tweaks.missileOrigin, dir
     vec2.scale dir, tweaks.projectileVelocity / vec2.length(dir)
-    p = @addParticle tweaks.missileOrigin[0], tweaks.missileOrigin[1], dir[0], dir[1]
-    p.explosive = true
+    @addParticle
+      x: tweaks.missileOrigin[0]
+      y: tweaks.missileOrigin[1]
+      vx: dir[0]
+      vy: dir[1]
+      explosive: true
 
     $(@eventsElement).mousemove @onMouseDrag
     event.preventDefault()
@@ -122,18 +126,11 @@ class @Game
     if @dragging
       dx = x - @mouseX
       dy = y - @mouseY
-      #@addParticle x, @graphics.canvas.height - y, dx, -dy
 
     @mouseX = x
     @mouseY = y
 
     event.preventDefault()
 
-  addParticle: (x, y, vx=0, vy=0) ->
-    p =
-      x: x
-      y: y
-      vx: vx
-      vy: vy
-    @particles.push p
-    return p
+  addParticle: (particle) ->
+    @particles.push particle
