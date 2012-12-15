@@ -61,6 +61,22 @@ class @Game
     deltaTime = @clock.tick()
     @graphics.animate deltaTime
 
+    si = 0
+    di = 0
+    while si < @particles.length
+      sp = @particles[si]
+      dp = @particles[di]
+      dp.x = sp.x + sp.vx
+      dp.y = sp.y + sp.vy
+      dp.vy = sp.vy - .1
+      if dp.x > @graphics.canvas.width or dp.x < 0 or dp.y < 0
+        #console.log 'particle died:', dp
+      else
+        dp.vx = sp.vx
+        dp.vy = sp.vy
+        di++
+      si++
+    @particles.length = di
     @graphics.render @particles
 
   onMouseDown: (event) =>
