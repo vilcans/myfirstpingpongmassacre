@@ -146,6 +146,11 @@ class @Graphics
       #gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST
       #gl.generateMipmap gl.TEXTURE_2D
 
+    @collisionImage = new Image()
+    @collisionImage.src = 'assets/collision.png'
+    @collisionImage.onload = callbacks.add =>
+      console.log 'collision map loaded'
+
   createProgram: (vertexShader, fragmentShader, {uniforms, attributes}) ->
     gl = @gl
     handle = gl.createProgram()

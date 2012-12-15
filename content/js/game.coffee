@@ -15,7 +15,9 @@ class @Game
     @particles = []
 
   init: (onFinished) ->
-    @graphics.init onFinished
+    @graphics.init =>
+      @map = new Map(@graphics.collisionImage)
+      onFinished()
 
   start: ->
     $(@eventsElement)
@@ -71,6 +73,8 @@ class @Game
       dp.vy = sp.vy - .1
       if dp.x > @graphics.canvas.width or dp.x < 0 or dp.y < 0
         #console.log 'particle died:', dp
+      else if @map.isOccupied(Math.floor(dp.x), Math.floor(dp.y))
+        #console.log 'hit!'
       else
         dp.vx = sp.vx
         dp.vy = sp.vy
