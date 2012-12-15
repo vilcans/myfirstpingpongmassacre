@@ -216,7 +216,6 @@ class @Graphics
 
     #console.log 'drawing', particles.length
 
-    gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
     i = 0
     arr = @particlesArray
     vertexCount = 0
@@ -237,15 +236,14 @@ class @Graphics
       vertexCount += 6
     floatCount = i
 
-    gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.STATIC_DRAW
-
     gl.useProgram @particlesProgram.handle
     gl.uniform2f @particlesProgram.uniforms.resolution, @canvas.width, @canvas.height
 
     gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
-    gl.bufferData gl.ARRAY_BUFFER, @particlesArray.subarray(0, floatCount), gl.STATIC_DRAW
+    gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.STATIC_DRAW
+    #gl.bufferData gl.ARRAY_BUFFER, @particlesArray.subarray(0, floatCount), gl.STATIC_DRAW
     #gl.bufferSubData gl.ARRAY_BUFFER, 0, @particlesArray.subarray(0, vertexCount * 2)
-    gl.vertexAttribPointer @particlesProgram.attributes.position, 2, gl.FLOAT, false, 0, 0
+    gl.vertexAttribPointer @particlesProgram.attributes.position, 2, gl.FLOAT, false, 2 * sizeOfFloat, 0
     gl.drawArrays gl.TRIANGLES, 0, vertexCount
 
     error = gl.getError()
