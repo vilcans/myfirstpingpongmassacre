@@ -26,6 +26,11 @@ void main() {
 }
 """
 
+glDecorator = (functionName, args) ->
+  for ii in [0...args.length]
+    if args[ii] == undefined
+      throw new Error("undefined passed to gl." + functionName)
+
 class @Graphics
 
   constructor: (@parentElement) ->
@@ -41,11 +46,15 @@ class @Graphics
     @canvas.width = @parentElement.clientWidth
     @canvas.height = @parentElement.clientHeight
 
-    gl = @gl = @canvas.getContext('experimental-webgl') || @canvas.getContext('webgl')
+    gl = @canvas.getContext('experimental-webgl') || @canvas.getContext('webgl')
     if not gl
       throw type: 'NoWebGL', message: 'WebGL not supported'
 
-    # Create vertex buffer (2 triangles)
+    WebGLDebugUtils.init gl
+    gl = WebGLDebugUtils.makeDebugContext(gl, undefined, glDecorator)
+
+    @gl = gl
+
     @backgroundQuadBuffer = gl.createBuffer()
     gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
     gl.bufferData gl.ARRAY_BUFFER, new Float32Array(
