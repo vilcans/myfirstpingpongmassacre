@@ -1,5 +1,5 @@
 pixelTypes =
-  AIR: 0,
+  AIR: 0,  # used as boolean: must be zero
   DIRT: 1,
   BUILDING: 2,
 
@@ -36,8 +36,7 @@ class @Map
       @collisionData[i] = t
 
   isOccupied: (x, y) ->
-    v = @collisionData[@getIndex(x, y)]
-    return v != pixelTypes.AIR
+    @collisionData[@getIndex(x, y)]
 
   explode: (x, y, radius, shrapnelExplosiveness, addParticle) ->
     for dy in [-radius..radius]
