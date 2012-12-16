@@ -36,6 +36,9 @@ class @Map
             g: @colorData.data[index + 1] / 255
             b: @colorData.data[index + 2] / 255
           @collisionData.data[index] = 255
+          @colorData.data[index] = 255
+          @colorData.data[index + 1] = 255
+          @colorData.data[index + 2] = 255
     return
 
   getIndex: (x, y) ->

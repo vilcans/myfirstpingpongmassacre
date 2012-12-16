@@ -90,8 +90,8 @@ class @Graphics
     callbacks = new Callbacks(onFinished)
 
     @parentElement.appendChild @canvas
-    @canvas.width = @parentElement.clientWidth
-    @canvas.height = @parentElement.clientHeight
+    @width = @canvas.width = @parentElement.clientWidth
+    @height = @canvas.height = @parentElement.clientHeight
 
     gl = @canvas.getContext('experimental-webgl') || @canvas.getContext('webgl')
     if not gl
@@ -190,6 +190,18 @@ class @Graphics
     @canvas.width = width;
     @canvas.height = height;
     @gl.viewport 0, 0, @canvas.width, @canvas.height
+
+  updateBackground: (imageData) ->
+    gl = @gl
+    gl.bindTexture gl.TEXTURE_2D, @texture
+    gl.texSubImage2D(
+      gl.TEXTURE_2D,  # target
+      0,  # level
+      0, 0,  # xoffset, yoffset
+      gl.RGBA,  # format
+      gl.UNSIGNED_BYTE  # type
+      imageData
+    )
 
   createShader: (source, type) ->
     gl = @gl
