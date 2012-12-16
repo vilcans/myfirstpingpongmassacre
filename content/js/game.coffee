@@ -88,9 +88,14 @@ class @Game
         inty = Math.floor(dp.y)
         if @map.isOccupied(intx, inty)
           if sp.explosiveness
-            @map.explode intx, inty, sp.explosiveness, Math.max(0, sp.explosiveness - 4), (p) =>
-              #console.log 'add particle', x, y
-              @addParticle p
+            @map.explode(
+              intx, inty,
+              tweaks.explosionRadius,
+              tweaks.nextExplosiveness[sp.explosiveness],
+              (p) =>
+                #console.log 'add particle', x, y
+                @addParticle p
+            )
             @backgroundModified = true
         else
           dp.vx = sp.vx
