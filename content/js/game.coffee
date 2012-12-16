@@ -113,8 +113,8 @@ class @Game
     dir = tempVec2
     vec2.subtract point, tweaks.cannonPosition, dir
 
-    @cannonAngle = Math.atan2(dir[1], dir[0])
-    console.log 'angle=', @cannonAngle
+    angle = Math.atan2(dir[1], dir[0])
+    @cannonAngle = Math.min(Math.max(angle, tweaks.cannonMinAngle), tweaks.cannonMaxAngle)
     @graphics.setCannonAngle @cannonAngle
 
   onMouseDown: (event) =>

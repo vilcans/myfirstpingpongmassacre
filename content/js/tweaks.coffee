@@ -7,6 +7,8 @@
     cannonSize: [64, 256]   # size of base
     calibre: 6  # thickness of cannon
     cannonLength: 60
+    cannonMinAngle: -.3
+    cannonMaxAngle: Math.PI / 2
 
     gravity: -.02
     nextExplosiveness:
