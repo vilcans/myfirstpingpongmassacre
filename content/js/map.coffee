@@ -27,6 +27,8 @@ class @Map
     for dy in [-radius..radius]
       ay = y + dy
       for dx in [-radius..radius]
+        if dx * dx + dy * dy > radius * radius
+          continue
         ax = x + dx
         index = @getIndex(ax, ay)
         if @collisionData.data[index] < 128
