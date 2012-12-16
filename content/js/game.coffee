@@ -13,7 +13,7 @@ class @Game
 
     @graphics = new Graphics(@parentElement)
     @keyboard = new Keyboard
-    @clock = new Clock
+    @clock = new ConstantRateClock(tickLength=1/120)
 
     @particles = []
 
@@ -63,10 +63,15 @@ class @Game
       requestAnimationFrame @animationFrame
 
   animate: =>
-    deltaTime = @clock.tick()
-    @graphics.animate deltaTime
+    @backgroundModified = false
+    ticks = @clock.tick()
+    while ticks--
+      @advanceFrame()
+    if @backgroundModified
+      @graphics.updateBackground @map.colorData
+    @graphics.render @particles
 
-    backgroundModified = false
+  advanceFrame: ->
     si = 0
     di = 0
     while si < @particles.length
@@ -86,7 +91,7 @@ class @Game
             @map.explode intx, inty, 5, (p) =>
               #console.log 'add particle', x, y
               @addParticle p
-            backgroundModified = true
+            @backgroundModified = true
         else
           dp.vx = sp.vx
           dp.vy = sp.vy
@@ -97,10 +102,6 @@ class @Game
           di++
       si++
     @particles.length = di
-
-    if backgroundModified
-      @graphics.updateBackground @map.colorData
-    @graphics.render @particles
 
   onMouseDown: (event) =>
     @dragging = true

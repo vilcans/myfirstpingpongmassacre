@@ -34,5 +34,29 @@ class @Clock
   getElapsedTime: ->
     return @lastTick - @startTime
 
-
 Clock.now = now
+
+
+class @ConstantRateClock
+  constructor: (tickLength=1/60, maxTicks=6) ->
+    @tickLength = tickLength
+    @maxTicks = maxTicks
+
+    @startTime = now()
+    @lastTick = @startTime
+
+  reset: ->
+    @lastTick = now()
+
+  # Returns the number of ticks that have passed
+  tick: ->
+    newTime = now()
+    length = newTime - @lastTick
+    ticks =  Math.floor(length / @tickLength)
+    if ticks > @maxTicks
+      @lastTick = newTime
+      #console.log 'too many ticks in one frame:', ticks
+      return @maxTicks
+    else
+      @lastTick += ticks * @tickLength
+      return ticks
