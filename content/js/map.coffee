@@ -10,11 +10,11 @@ class @Map
     @height = @canvas.height = collisionImage.height;
     @context = @canvas.getContext('2d')
 
-    @createCollisionMap collisionImage
-
     @context.clearRect 0, 0, @width, @height
     @context.drawImage worldImage, 0, 0
     @colorData = @context.getImageData(0, 0, @width, @height)
+
+    @createCollisionMap collisionImage
 
   createCollisionMap: (collisionImage) ->
     @context.clearRect 0, 0, @width, @height
@@ -27,12 +27,12 @@ class @Map
       g = imageData.data[i * 4 + 1]
       b = imageData.data[i * 4 + 2]
       a = imageData.data[i * 4 + 3]
-      if a < 128
+      if a < 255 and @colorData.data[i * 4 + 3] == 0
         t = pixelTypes.AIR
-      else if g > r
-        t = pixelTypes.DIRT
-      else
+      else if r > g
         t = pixelTypes.BUILDING
+      else
+        t = pixelTypes.DIRT
       @collisionData[i] = t
 
   isOccupied: (x, y) ->
