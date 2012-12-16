@@ -1,6 +1,8 @@
 
 tempVec2 = vec2.create()
 
+createEmptyScoresArray = -> [0, 0, 0, 0, 0, 0, 0, 0]
+
 class @Game
   constructor: ({
     # Element which will get the game canvas as a child
@@ -16,6 +18,8 @@ class @Game
     @clock = new ConstantRateClock(tickLength=1/120)
 
     @particles = []
+    @score =
+      perType: createEmptyScoresArray()
 
   init: (onFinished) ->
     @graphics.init =>
@@ -66,11 +70,16 @@ class @Game
   animate: =>
     @backgroundModified = false
     ticks = @clock.tick()
+    @scoresForFrame = createEmptyScoresArray()
     while ticks--
       @advanceFrame()
     if @backgroundModified
       @graphics.updateBackground @map.colorData
     @graphics.render @particles
+    for score, type in @scoresForFrame
+      if score
+        #console.log type, score
+        @score.perType[type] += score
 
   advanceFrame: ->
     si = 0
@@ -93,6 +102,7 @@ class @Game
               intx, inty,
               tweaks.explosionRadius,
               tweaks.nextExplosiveness[sp.explosiveness],
+              @scoresForFrame,
               (p) =>
                 #console.log 'add particle', x, y
                 @addParticle p

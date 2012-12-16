@@ -38,7 +38,7 @@ class @Map
   isOccupied: (x, y) ->
     @collisionData[@getIndex(x, y)]
 
-  explode: (x, y, radius, shrapnelExplosiveness, addParticle) ->
+  explode: (x, y, radius, shrapnelExplosiveness, scores, addParticle) ->
     for dy in [-radius..radius]
       ay = y + dy
       for dx in [-radius..radius]
@@ -46,7 +46,9 @@ class @Map
           continue
         ax = x + dx
         index = @getIndex(ax, ay)
-        if @collisionData[index] != pixelTypes.AIR
+        type = @collisionData[index]
+        if type != pixelTypes.AIR
+          scores[type]++
           addParticle
             x: ax,
             y: ay,
