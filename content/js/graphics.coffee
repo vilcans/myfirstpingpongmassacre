@@ -254,7 +254,7 @@ class @Graphics
 
     gl = @gl
     gl.bindBuffer gl.ARRAY_BUFFER, @cannonBuffer
-    gl.bufferData gl.ARRAY_BUFFER, @cannonArray, gl.STATIC_DRAW
+    gl.bufferData gl.ARRAY_BUFFER, @cannonArray, gl.DYNAMIC_DRAW
 
   setCannonAngle: (angle) ->
     @cannonAngle = angle
@@ -370,8 +370,29 @@ class @Graphics
 
   renderParticles: (particles) ->
     gl = @gl
-    i = 0
+    [vertexCount, floatCount] = @updateParticlesArray(particles)
+
+    gl.useProgram @particlesProgram.handle
+
+    gl.enableVertexAttribArray @particlesProgram.attributes.position
+    gl.enableVertexAttribArray @particlesProgram.attributes.color
+
+    gl.uniform2f @particlesProgram.uniforms.resolution, @canvas.width, @canvas.height
+
+    gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
+    gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.DYNAMIC_DRAW
+    #gl.bufferData gl.ARRAY_BUFFER, @particlesArray.subarray(0, floatCount), gl.DYNAMIC_DRAW
+    #gl.bufferSubData gl.ARRAY_BUFFER, 0, @particlesArray.subarray(0, floatCount)
+    gl.vertexAttribPointer @particlesProgram.attributes.position, 2, gl.FLOAT, false, 5 * sizeOfFloat, 0
+    gl.vertexAttribPointer @particlesProgram.attributes.color, 3, gl.FLOAT, false, 5 * sizeOfFloat, 2 * sizeOfFloat
+    gl.drawArrays gl.TRIANGLES, 0, vertexCount
+
+    gl.disableVertexAttribArray @particlesProgram.attributes.position
+    gl.disableVertexAttribArray @particlesProgram.attributes.color
+
+  updateParticlesArray: (particles) ->
     arr = @particlesArray
+    i = 0
     vertexCount = 0
     for particleIndex in [Math.max(0, particles.length - MAX_PARTICLES)...particles.length]
       particle = particles[particleIndex]
@@ -408,21 +429,4 @@ class @Graphics
       arr[i++] = particle.b
       vertexCount += 6
     floatCount = i
-
-    gl.useProgram @particlesProgram.handle
-
-    gl.enableVertexAttribArray @particlesProgram.attributes.position
-    gl.enableVertexAttribArray @particlesProgram.attributes.color
-
-    gl.uniform2f @particlesProgram.uniforms.resolution, @canvas.width, @canvas.height
-
-    gl.bindBuffer gl.ARRAY_BUFFER, @particlesBuffer
-    gl.bufferData gl.ARRAY_BUFFER, @particlesArray, gl.STATIC_DRAW
-    #gl.bufferData gl.ARRAY_BUFFER, @particlesArray.subarray(0, floatCount), gl.STATIC_DRAW
-    #gl.bufferSubData gl.ARRAY_BUFFER, 0, @particlesArray.subarray(0, vertexCount * 2)
-    gl.vertexAttribPointer @particlesProgram.attributes.position, 2, gl.FLOAT, false, 5 * sizeOfFloat, 0
-    gl.vertexAttribPointer @particlesProgram.attributes.color, 3, gl.FLOAT, false, 5 * sizeOfFloat, 2 * sizeOfFloat
-    gl.drawArrays gl.TRIANGLES, 0, vertexCount
-
-    gl.disableVertexAttribArray @particlesProgram.attributes.position
-    gl.disableVertexAttribArray @particlesProgram.attributes.color
+    return [vertexCount, floatCount]
