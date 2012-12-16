@@ -29,6 +29,7 @@ class @Game
     $(document.body).mouseup(@onMouseUp)
 
     $(document).keydown(@keyboard.onKeyDown).keyup(@keyboard.onKeyUp)
+    $(@eventsElement).mousemove @onMouseMove
 
     document.addEventListener 'mozvisibilitychange', @handleVisibilityChange, false
     if document.mozVisibilityState and document.mozVisibilityState != 'visible'
@@ -108,21 +109,29 @@ class @Game
       si++
     @particles.length = di
 
+  aim: (point) =>
+    dir = tempVec2
+    vec2.subtract point, tweaks.cannonPosition, dir
+
+    @cannonAngle = Math.atan2(dir[1], dir[0])
+    console.log 'angle=', @cannonAngle
+    @graphics.setCannonAngle @cannonAngle
+
   onMouseDown: (event) =>
     @dragging = true
     @mouseX = event.clientX
     @mouseY = event.clientY
 
-    dir = tempVec2
-    dir[0] = event.clientX
-    dir[1] = @graphics.canvas.height - event.clientY
-    vec2.subtract dir, tweaks.missileOrigin, dir
-    vec2.scale dir, tweaks.projectileVelocity / vec2.length(dir)
+    @aim [event.clientX, @graphics.canvas.height - event.clientY]
+
+    dx = Math.cos(@cannonAngle)
+    dy = Math.sin(@cannonAngle)
     @addParticle
-      x: tweaks.missileOrigin[0]
-      y: tweaks.missileOrigin[1]
-      vx: dir[0]
-      vy: dir[1]
+      # Subtracting tweaks.projectileVelocity as the particle will be moved once before displayed
+      x: tweaks.cannonPosition[0] + dx * (tweaks.cannonLength - tweaks.projectileVelocity)
+      y: tweaks.cannonPosition[1] + dy * (tweaks.cannonLength - tweaks.projectileVelocity)
+      vx: dx * tweaks.projectileVelocity
+      vy: dy * tweaks.projectileVelocity
       explosiveness: tweaks.projectileExplosiveness
       r: 0, g: 0, b: 0
 
@@ -133,6 +142,9 @@ class @Game
     @dragging = false
 
     $(@eventsElement).off 'mousemove', @onMouseDrag
+
+  onMouseMove: (event) =>
+    @aim [event.clientX, @graphics.canvas.height - event.clientY]
 
   onMouseDrag: (event) =>
     x = event.clientX

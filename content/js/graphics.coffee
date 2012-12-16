@@ -91,6 +91,20 @@ class @Graphics
     @canvas = document.createElement 'canvas'
     @gl = null
     @buffer = null
+    @tempVec2 = vec2.create()
+    @mat2Identity = mat2.identity()
+    @cannonAngle = 0
+
+    r = tweaks.calibre
+    h = tweaks.cannonLength
+    @cannonPoints = [
+      vec2.createFrom(-r, 0),
+      vec2.createFrom( r, 0),
+      vec2.createFrom(-r, h),
+      vec2.createFrom( r, 0),
+      vec2.createFrom( r, h),
+      vec2.createFrom(-r, h),
+    ]
 
   init: (onFinished) ->
     callbacks = new Callbacks(onFinished)
@@ -177,13 +191,13 @@ class @Graphics
     @collisionImage.onload = callbacks.add =>
       console.log 'collision map loaded'
 
-    @cannonTexture = gl.createTexture()
-    @cannonImage = new Image()
-    @cannonImage.src = 'assets/base.png'
-    @cannonImage.onload = callbacks.add =>
+    @atlasTexture = gl.createTexture()
+    @atlasImage = new Image()
+    @atlasImage.src = 'assets/atlas.png'
+    @atlasImage.onload = callbacks.add =>
       console.log 'cannon loaded'
-      gl.bindTexture gl.TEXTURE_2D, @cannonTexture
-      gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, @cannonImage
+      gl.bindTexture gl.TEXTURE_2D, @atlasTexture
+      gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, @atlasImage
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR
 
@@ -196,14 +210,42 @@ class @Graphics
     top = tweaks.cannonPosition[1] + radius
     bottom = top - tweaks.cannonSize[1]
     @cannonArray = new Float32Array([
+      # cannon
+      # x, y, u, v  (x and y are filled in by updateCannonVertices)
+      0, 0 , 0, .5,
+      0, 0 , 1, .5,
+      0, 0 , 0, 1,
+      0, 0 , 1, .5,
+      0, 0 , 1, 1
+      0, 0 , 0, 1,
+
+      # base
       left, bottom,   0, 0,
       right, bottom,  1, 0,
-      left, top,      0, 1,
+      left, top,      0, .5,
       right, bottom,  1, 0,
-      right, top,     1, 1,
-      left, top,      0, 1,
+      right, top,     1, .5,
+      left, top,      0, .5,
     ])
+    @updateCannonVertices()
+
+  updateCannonVertices: ->
+    rotated = @tempVec2
+    rotation = mat2.create()
+    mat2.rotate @mat2Identity, @cannonAngle - Math.PI / 2, rotation
+
+    for p, i in @cannonPoints
+      mat2.multiplyVec2 rotation, p, rotated
+      @cannonArray[i * 4 +  0] = rotated[0] + tweaks.cannonPosition[0]
+      @cannonArray[i * 4 +  1] = rotated[1] + tweaks.cannonPosition[1]
+
+    gl = @gl
+    gl.bindBuffer gl.ARRAY_BUFFER, @cannonBuffer
     gl.bufferData gl.ARRAY_BUFFER, @cannonArray, gl.STATIC_DRAW
+
+  setCannonAngle: (angle) ->
+    @cannonAngle = angle
+    @updateCannonVertices()
 
   createProgram: (vertexShader, fragmentShader, {uniforms, attributes}) ->
     gl = @gl
@@ -281,7 +323,7 @@ class @Graphics
     gl.useProgram @backgroundProgram.handle
 
     gl.activeTexture gl.TEXTURE0
-    gl.bindTexture gl.TEXTURE_2D, @cannonTexture
+    gl.bindTexture gl.TEXTURE_2D, @atlasTexture
     gl.uniform1i @backgroundProgram.uniforms.diffuseMap, 0
 
     gl.enableVertexAttribArray @backgroundProgram.attributes.position
@@ -293,7 +335,7 @@ class @Graphics
     gl.bindBuffer gl.ARRAY_BUFFER, @cannonBuffer
     gl.vertexAttribPointer @backgroundProgram.attributes.position, 2, gl.FLOAT, false, 4 * sizeOfFloat, 0
     gl.vertexAttribPointer @backgroundProgram.attributes.textureCoordinates, 2, gl.FLOAT, false, 4 * sizeOfFloat, 2 * sizeOfFloat
-    gl.drawArrays gl.TRIANGLES, 0, 6
+    gl.drawArrays gl.TRIANGLES, 0, @cannonArray.length / 4
 
   renderParticles: (particles) ->
     gl = @gl
