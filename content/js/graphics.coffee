@@ -232,7 +232,7 @@ class @Graphics
   render: (particles) ->
     gl = @gl
     gl.clearColor .0, .0, .0, .0
-    gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
+    gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT
 
     gl.disable gl.CULL_FACE
 
@@ -244,8 +244,6 @@ class @Graphics
     gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
     gl.vertexAttribPointer @backgroundProgram.attributes.position, 2, gl.FLOAT, false, 0, 0
     gl.drawArrays gl.TRIANGLES, 0, 6
-
-    #console.log 'drawing', particles.length
 
     i = 0
     arr = @particlesArray
