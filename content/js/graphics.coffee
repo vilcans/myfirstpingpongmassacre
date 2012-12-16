@@ -3,10 +3,14 @@ vertexShader = """
 precision highp float;
 #endif
 
+uniform vec2 resolution;
 attribute vec3 position;
+attribute vec2 textureCoordinates;
+varying vec2 v_textureCoordinates;
 
 void main() {
-  gl_Position = vec4(position, 1.0);
+  gl_Position = vec4(2.0 * (position.xy / resolution - vec2(.5)), .5, 1.0);
+  v_textureCoordinates = textureCoordinates;
 }
 """
 
@@ -17,10 +21,13 @@ precision highp float;
 
 uniform vec2 resolution;
 uniform sampler2D diffuseMap;
+varying vec2 v_textureCoordinates;
 
 void main() {
-  vec2 normPoint = gl_FragCoord.xy / resolution;
-  vec4 texel = texture2D(diffuseMap, normPoint);
+  //vec2 normPoint = gl_FragCoord.xy / resolution;
+  //vec4 texel = texture2D(diffuseMap, normPoint);
+  vec4 texel = texture2D(diffuseMap, v_textureCoordinates);
+  //vec4 texel = vec4(v_textureCoordinates, .2, 1.0);
   gl_FragColor = texel;
 }
 """
@@ -107,8 +114,8 @@ class @Graphics
 
     @gl = gl
 
-    #gl.enable gl.BLEND
-    #gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
+    gl.enable gl.BLEND
+    gl.blendFunc gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA
 
     # gl.enable(gl.BLEND);
     # gl.disable(gl.DEPTH_TEST);
@@ -133,6 +140,7 @@ class @Graphics
       ],
       attributes: [
         'position',
+        'textureCoordinates',
       ]
     )
 
@@ -168,6 +176,34 @@ class @Graphics
     @collisionImage.src = 'assets/collision.png'
     @collisionImage.onload = callbacks.add =>
       console.log 'collision map loaded'
+
+    @cannonTexture = gl.createTexture()
+    @cannonImage = new Image()
+    @cannonImage.src = 'assets/base.png'
+    @cannonImage.onload = callbacks.add =>
+      console.log 'cannon loaded'
+      gl.bindTexture gl.TEXTURE_2D, @cannonTexture
+      gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, @cannonImage
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR
+
+    # CANNON
+    @cannonBuffer = gl.createBuffer()
+    gl.bindBuffer gl.ARRAY_BUFFER, @cannonBuffer
+    radius = tweaks.cannonSize[0] / 2  # radius of the cannon dome
+    left = tweaks.cannonPosition[0] - radius
+    right = left + tweaks.cannonSize[0]
+    top = tweaks.cannonPosition[1] + radius
+    bottom = top - tweaks.cannonSize[1]
+    @cannonArray = new Float32Array([
+      left, bottom,   0, 0,
+      right, bottom,  1, 0,
+      left, top,      0, 1,
+      right, bottom,  1, 0,
+      right, top,     1, 1,
+      left, top,      0, 1,
+    ])
+    gl.bufferData gl.ARRAY_BUFFER, @cannonArray, gl.STATIC_DRAW
 
   createProgram: (vertexShader, fragmentShader, {uniforms, attributes}) ->
     gl = @gl
@@ -233,18 +269,34 @@ class @Graphics
     gl = @gl
     gl.clearColor .0, .0, .0, .0
     gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT
-
     gl.disable gl.CULL_FACE
 
+    @renderCannon()
+
+    if particles.length
+      @renderParticles particles
+
+  renderCannon: ->
+    gl = @gl
     gl.useProgram @backgroundProgram.handle
+
+    gl.activeTexture gl.TEXTURE0
+    gl.bindTexture gl.TEXTURE_2D, @cannonTexture
+    gl.uniform1i @backgroundProgram.uniforms.diffuseMap, 0
+
     gl.enableVertexAttribArray @backgroundProgram.attributes.position
+    gl.enableVertexAttribArray @backgroundProgram.attributes.textureCoordinates
 
     gl.uniform2f @backgroundProgram.uniforms.resolution, @canvas.width, @canvas.height
 
-    gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
-    gl.vertexAttribPointer @backgroundProgram.attributes.position, 2, gl.FLOAT, false, 0, 0
+    #gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
+    gl.bindBuffer gl.ARRAY_BUFFER, @cannonBuffer
+    gl.vertexAttribPointer @backgroundProgram.attributes.position, 2, gl.FLOAT, false, 4 * sizeOfFloat, 0
+    gl.vertexAttribPointer @backgroundProgram.attributes.textureCoordinates, 2, gl.FLOAT, false, 4 * sizeOfFloat, 2 * sizeOfFloat
     gl.drawArrays gl.TRIANGLES, 0, 6
 
+  renderParticles: (particles) ->
+    gl = @gl
     i = 0
     arr = @particlesArray
     vertexCount = 0
@@ -298,6 +350,5 @@ class @Graphics
     gl.vertexAttribPointer @particlesProgram.attributes.color, 3, gl.FLOAT, false, 5 * sizeOfFloat, 2 * sizeOfFloat
     gl.drawArrays gl.TRIANGLES, 0, vertexCount
 
-    error = gl.getError()
-    if error
-      throw new Error("GL error: #{error}")
+    gl.disableVertexAttribArray @particlesProgram.attributes.position
+    gl.disableVertexAttribArray @particlesProgram.attributes.color
