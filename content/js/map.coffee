@@ -35,8 +35,8 @@ class @Map
           addParticle
             x: ax,
             y: ay,
-            vx: dx
-            vy: dy
+            vx: dx + (Math.random() - .5) * 1
+            vy: dy + (Math.random() - .5) * 1
             explosiveness: shrapnelExplosiveness
             r: @colorData.data[index] / 255
             g: @colorData.data[index + 1] / 255
