@@ -60,7 +60,7 @@ void main() {
 
 sizeOfFloat = 4
 
-particleRadius = Math.sqrt(2) * 1
+particleRadius = Math.sqrt(2) * 2
 numberOfParticleSegments = 4
 floatsPerParticle = 2 * 6   # xy * 6 vertices
 
