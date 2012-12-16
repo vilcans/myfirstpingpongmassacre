@@ -7,10 +7,14 @@ class @Map
 
     @createCollisionMap collisionImage
 
+    @context.clearRect 0, 0, @width, @height
     @context.drawImage worldImage, 0, 0
     @colorData = @context.getImageData(0, 0, @width, @height)
+    #for i in [0...@width * @height]
+    #  @colorData.data[i * 4 + 3] = 255 - @collisionData.data[i * 4]
 
   createCollisionMap: (collisionImage) ->
+    @context.clearRect 0, 0, @width, @height
     @context.drawImage collisionImage, 0, 0
     @collisionData = @context.getImageData(0, 0, @width, @height)
 
@@ -36,9 +40,10 @@ class @Map
             g: @colorData.data[index + 1] / 255
             b: @colorData.data[index + 2] / 255
           @collisionData.data[index] = 255
-          @colorData.data[index] = 255
-          @colorData.data[index + 1] = 255
-          @colorData.data[index + 2] = 255
+          #@colorData.data[index + 0] = 0
+          #@colorData.data[index + 1] = 0
+          #@colorData.data[index + 2] = 0
+          @colorData.data[index + 3] = 0
     return
 
   getIndex: (x, y) ->

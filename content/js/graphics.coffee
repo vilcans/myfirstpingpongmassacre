@@ -20,7 +20,6 @@ uniform sampler2D diffuseMap;
 
 void main() {
   vec2 normPoint = gl_FragCoord.xy / resolution;
-  //gl_FragColor = vec4(normPoint, .0, 1.0);
   vec4 texel = texture2D(diffuseMap, normPoint);
   gl_FragColor = texel;
 }
@@ -93,7 +92,12 @@ class @Graphics
     @width = @canvas.width = @parentElement.clientWidth
     @height = @canvas.height = @parentElement.clientHeight
 
-    gl = @canvas.getContext('experimental-webgl') || @canvas.getContext('webgl')
+    contextAttributes =
+      premultipliedAlpha: false
+    gl = @canvas.getContext('experimental-webgl', contextAttributes)
+
+    if not gl
+      gl = @canvas.getContext('webgl', contextAttributes)
     if not gl
       throw type: 'NoWebGL', message: 'WebGL not supported'
 
@@ -102,6 +106,16 @@ class @Graphics
       gl = WebGLDebugUtils.makeDebugContext(gl, undefined, glDecorator)
 
     @gl = gl
+
+    #gl.enable gl.BLEND
+    #gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
+
+    # gl.enable(gl.BLEND);
+    # gl.disable(gl.DEPTH_TEST);
+    # gl.disable(gl.CULL_FACE);
+    # gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+
     @updateSize @canvas.width, @canvas.height
 
     # BACKGROUND
@@ -217,7 +231,7 @@ class @Graphics
 
   render: (particles) ->
     gl = @gl
-    gl.clearColor .1, 0.5, .5, 1.0
+    gl.clearColor .0, .0, .0, .0
     gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
 
     gl.disable gl.CULL_FACE
