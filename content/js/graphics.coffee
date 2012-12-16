@@ -92,8 +92,8 @@ class @Graphics
     @width = @canvas.width = @parentElement.clientWidth
     @height = @canvas.height = @parentElement.clientHeight
 
-    contextAttributes =
-      premultipliedAlpha: false
+    contextAttributes = {}
+      #premultipliedAlpha: false
     gl = @canvas.getContext('experimental-webgl', contextAttributes)
 
     if not gl

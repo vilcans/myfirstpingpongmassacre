@@ -40,9 +40,9 @@ class @Map
             g: @colorData.data[index + 1] / 255
             b: @colorData.data[index + 2] / 255
           @collisionData.data[index] = 255
-          #@colorData.data[index + 0] = 0
-          #@colorData.data[index + 1] = 0
-          #@colorData.data[index + 2] = 0
+          @colorData.data[index + 0] = 0
+          @colorData.data[index + 1] = 0
+          @colorData.data[index + 2] = 0
           @colorData.data[index + 3] = 0
     return
 
