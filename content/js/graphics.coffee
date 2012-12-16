@@ -66,16 +66,23 @@ void main() {
 
 sizeOfFloat = 4
 
-particleRadius = Math.sqrt(2) * 2
 numberOfParticleSegments = 4
 floatsPerParticle = 5 * 6   # xyrgb * 6 vertices
 
-particleCoordsX = []
-particleCoordsY = []
-for i in [0...numberOfParticleSegments]
-  angle = Math.PI * 2 / numberOfParticleSegments * (i + .5)
-  particleCoordsX[i] = Math.sin(angle) * particleRadius
-  particleCoordsY[i] = Math.cos(angle) * particleRadius
+makeCoords = (size) ->
+  particleRadius = Math.sqrt(2) * size
+  xArray = []
+  yArray = []
+  for i in [0...numberOfParticleSegments]
+    angle = Math.PI * 2 / numberOfParticleSegments * (i + .5)
+    xArray[i] = Math.sin(angle) * particleRadius
+    yArray[i] = Math.cos(angle) * particleRadius
+  return [xArray, yArray]
+
+particleCoordsForExplosiveness =
+  5: makeCoords(2)
+  3: makeCoords(1.5)
+  0: makeCoords(1)
 
 MAX_PARTICLES = 1000
 
@@ -368,6 +375,7 @@ class @Graphics
     vertexCount = 0
     for particleIndex in [Math.max(0, particles.length - MAX_PARTICLES)...particles.length]
       particle = particles[particleIndex]
+      [particleCoordsX, particleCoordsY] = particleCoordsForExplosiveness[particle.explosiveness]
       arr[i++] = particle.x + particleCoordsX[0]
       arr[i++] = particle.y + particleCoordsY[0]
       arr[i++] = particle.r
