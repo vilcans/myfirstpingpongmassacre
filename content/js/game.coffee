@@ -119,7 +119,7 @@ class @Game
       vx: dir[0]
       vy: dir[1]
       explosive: true
-      r: 1.0, g: .5, b: 0
+      r: 0, g: 0, b: 0
 
     $(@eventsElement).mousemove @onMouseDrag
     event.preventDefault()
