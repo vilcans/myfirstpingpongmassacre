@@ -3,7 +3,7 @@
     projectileExplosiveness: 5
     missileOrigin: [88, 512 - 410]
 
-    cannonPosition: [56, 512 - 448]
+    cannonPosition: [56, 512 - 428]
     cannonSize: [64, 256]   # size of base
     calibre: 6  # thickness of cannon
     cannonLength: 60
