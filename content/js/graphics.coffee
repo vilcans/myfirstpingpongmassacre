@@ -143,9 +143,15 @@ class @Graphics
 
     @backgroundQuadBuffer = gl.createBuffer()
     gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
-    gl.bufferData gl.ARRAY_BUFFER, new Float32Array(
-      [ -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0 ]
-    ), gl.STATIC_DRAW
+    gl.bufferData gl.ARRAY_BUFFER, new Float32Array([
+      # x, y, u, v
+      0, 0,   0, 0,
+      1, 0,   1, 0,
+      0, 1,   0, 1,
+      1, 0,   1, 0,
+      1, 1,   1, 1,
+      0, 1,   0, 1,
+    ]), gl.STATIC_DRAW
 
     @backgroundProgram = @createProgram(vertexShader, fragmentShader,
       uniforms: [
@@ -314,9 +320,28 @@ class @Graphics
     gl.disable gl.CULL_FACE
 
     @renderCannon()
+    @renderWorld()
 
     if particles.length
       @renderParticles particles
+
+  renderWorld: ->
+    gl = @gl
+    gl.useProgram @backgroundProgram.handle
+
+    gl.activeTexture gl.TEXTURE0
+    gl.bindTexture gl.TEXTURE_2D, @texture
+    gl.uniform1i @backgroundProgram.uniforms.diffuseMap, 0
+
+    gl.enableVertexAttribArray @backgroundProgram.attributes.position
+    gl.enableVertexAttribArray @backgroundProgram.attributes.textureCoordinates
+
+    gl.uniform2f @backgroundProgram.uniforms.resolution, 1, 1
+
+    gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
+    gl.vertexAttribPointer @backgroundProgram.attributes.position, 2, gl.FLOAT, false, 4 * sizeOfFloat, 0
+    gl.vertexAttribPointer @backgroundProgram.attributes.textureCoordinates, 2, gl.FLOAT, false, 4 * sizeOfFloat, 2 * sizeOfFloat
+    gl.drawArrays gl.TRIANGLES, 0, 6
 
   renderCannon: ->
     gl = @gl
@@ -331,7 +356,6 @@ class @Graphics
 
     gl.uniform2f @backgroundProgram.uniforms.resolution, @canvas.width, @canvas.height
 
-    #gl.bindBuffer gl.ARRAY_BUFFER, @backgroundQuadBuffer
     gl.bindBuffer gl.ARRAY_BUFFER, @cannonBuffer
     gl.vertexAttribPointer @backgroundProgram.attributes.position, 2, gl.FLOAT, false, 4 * sizeOfFloat, 0
     gl.vertexAttribPointer @backgroundProgram.attributes.textureCoordinates, 2, gl.FLOAT, false, 4 * sizeOfFloat, 2 * sizeOfFloat
