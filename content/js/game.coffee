@@ -87,15 +87,15 @@ class @Game
         intx = Math.floor(dp.x)
         inty = Math.floor(dp.y)
         if @map.isOccupied(intx, inty)
-          if sp.explosive
-            @map.explode intx, inty, 5, (p) =>
+          if sp.explosiveness
+            @map.explode intx, inty, sp.explosiveness, Math.max(0, sp.explosiveness - 4), (p) =>
               #console.log 'add particle', x, y
               @addParticle p
             @backgroundModified = true
         else
           dp.vx = sp.vx
           dp.vy = sp.vy
-          dp.explosive = sp.explosive
+          dp.explosiveness = sp.explosiveness
           dp.r = sp.r
           dp.g = sp.g
           dp.b = sp.b
@@ -118,7 +118,7 @@ class @Game
       y: tweaks.missileOrigin[1]
       vx: dir[0]
       vy: dir[1]
-      explosive: true
+      explosiveness: tweaks.projectileExplosiveness
       r: 0, g: 0, b: 0
 
     $(@eventsElement).mousemove @onMouseDrag

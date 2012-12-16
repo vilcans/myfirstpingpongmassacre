@@ -23,7 +23,7 @@ class @Map
     v = @collisionData.data[@getIndex(x, y)]
     return v < 128
 
-  explode: (x, y, radius, addParticle) ->
+  explode: (x, y, radius, shrapnelExplosiveness, addParticle) ->
     for dy in [-radius..radius]
       ay = y + dy
       for dx in [-radius..radius]
@@ -35,7 +35,7 @@ class @Map
             y: ay,
             vx: dx
             vy: dy
-            explosive: false
+            explosiveness: shrapnelExplosiveness
             r: @colorData.data[index] / 255
             g: @colorData.data[index + 1] / 255
             b: @colorData.data[index + 2] / 255
