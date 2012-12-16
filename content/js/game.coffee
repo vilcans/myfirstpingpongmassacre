@@ -21,6 +21,10 @@ class @Game
     @score =
       perType: createEmptyScoresArray()
 
+    @lastAmmo = -1  # for gui update
+    @ammo = tweaks.ammo
+    @ammoElement = document.getElementById('ammo')
+
   init: (onFinished) ->
     @graphics.init =>
       @map = new Map(@graphics.collisionImage, @graphics.worldImage)
@@ -81,6 +85,15 @@ class @Game
         #console.log type, score
         @score.perType[type] += score
 
+    if @ammo != @lastAmmo
+      @lastAmmo = @ammo
+      if @ammo >= 100
+        @ammoElement.textContent = "#{@ammo}"
+      else if @ammo >= 10
+        @ammoElement.textContent = "0#{@ammo}"
+      else
+        @ammoElement.textContent = "00#{@ammo}"
+
   advanceFrame: ->
     si = 0
     di = 0
@@ -132,18 +145,20 @@ class @Game
     @mouseX = event.clientX
     @mouseY = event.clientY
 
-    @aim [event.clientX, @graphics.canvas.height - event.clientY]
+    if @ammo > 0
+      --@ammo
+      @aim [event.clientX, @graphics.canvas.height - event.clientY]
 
-    dx = Math.cos(@cannonAngle)
-    dy = Math.sin(@cannonAngle)
-    @addParticle
-      # Subtracting tweaks.projectileVelocity as the particle will be moved once before displayed
-      x: tweaks.cannonPosition[0] + dx * (tweaks.cannonLength - tweaks.projectileVelocity)
-      y: tweaks.cannonPosition[1] + dy * (tweaks.cannonLength - tweaks.projectileVelocity)
-      vx: dx * tweaks.projectileVelocity
-      vy: dy * tweaks.projectileVelocity
-      explosiveness: tweaks.projectileExplosiveness
-      r: 0, g: 0, b: 0
+      dx = Math.cos(@cannonAngle)
+      dy = Math.sin(@cannonAngle)
+      @addParticle
+        # Subtracting tweaks.projectileVelocity as the particle will be moved once before displayed
+        x: tweaks.cannonPosition[0] + dx * (tweaks.cannonLength - tweaks.projectileVelocity)
+        y: tweaks.cannonPosition[1] + dy * (tweaks.cannonLength - tweaks.projectileVelocity)
+        vx: dx * tweaks.projectileVelocity
+        vy: dy * tweaks.projectileVelocity
+        explosiveness: tweaks.projectileExplosiveness
+        r: 0, g: 0, b: 0
 
     $(@eventsElement).mousemove @onMouseDrag
     event.preventDefault()

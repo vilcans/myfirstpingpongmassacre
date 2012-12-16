@@ -17,3 +17,5 @@
         #1: 0
         0: 0
     explosionRadius: 3
+
+    ammo: 20
