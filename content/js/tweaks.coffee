@@ -18,7 +18,7 @@
         0: 0
     explosionRadius: 3
 
-    ammo: 20
+    ammo: 50
     superAmmoLimit: 10
     ammoR: 0
     ammoG: 0
