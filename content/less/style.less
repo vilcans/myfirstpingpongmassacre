@@ -28,6 +28,11 @@ a {
   font-size: 14px;
   background-image: url('assets/sky.jpg');
 }
+#game > canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 
 footer {
   text-align: center;
@@ -41,9 +46,31 @@ footer {
 
 #ammo {
   position: absolute;
-  left: 40px;
-  bottom: 5px;
+  left: 42px;
+  bottom: 7px;
   font-size: 14px;
   font-family: monospace;
   color: #ccc;
+  z-index: 1;
+}
+
+#gameover {
+  font-size: 24px;
+  font-family: monospace;
+  color: white;
+  position: absolute;
+  top: 25px;
+  width: 100%;
+  z-index: 1;
+  > table {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  > h2 {
+    text-align: center;
+    font-size: 32px;
+  }
+  > p {
+    text-align: center;
+  }
 }

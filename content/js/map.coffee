@@ -1,7 +1,15 @@
 pixelTypes =
   AIR: 0,  # used as boolean: must be zero
-  DIRT: 1,
-  BUILDING: 2,
+  SOLDIERS: 1,
+  PROPERTY: 2,
+  KITTENS: 3,
+  DIRT: 4,
+  GOATS: 5,
+  CHILDREN: 6,
+  MEN: 7,
+  WOMEN: 8,
+
+createEmptyScoresArray = -> [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 class @Map
   constructor: (collisionImage, worldImage) ->
@@ -17,6 +25,7 @@ class @Map
     @createCollisionMap collisionImage
 
   createCollisionMap: (collisionImage) ->
+    @totalPerType = createEmptyScoresArray()
     @context.clearRect 0, 0, @width, @height
     @context.drawImage collisionImage, 0, 0
     imageData = @context.getImageData(0, 0, @width, @height)
@@ -27,12 +36,13 @@ class @Map
       g = imageData.data[i * 4 + 1]
       b = imageData.data[i * 4 + 2]
       a = imageData.data[i * 4 + 3]
-      if a < 255 and @colorData.data[i * 4 + 3] == 0
+      if a < 235 and @colorData.data[i * 4 + 3] == 0
         t = pixelTypes.AIR
       else if r > g
-        t = pixelTypes.BUILDING
+        t = pixelTypes.PROPERTY
       else
         t = pixelTypes.DIRT
+      @totalPerType[t]++
       @collisionData[i] = t
 
   isOccupied: (x, y) ->
@@ -69,3 +79,4 @@ class @Map
     (x + (@height - y - 1) * @width)
 
 Map.pixelTypes = pixelTypes
+Map.createEmptyScoresArray = createEmptyScoresArray

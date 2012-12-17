@@ -1,7 +1,18 @@
 
 tempVec2 = vec2.create()
 
-createEmptyScoresArray = -> [0, 0, 0, 0, 0, 0, 0, 0]
+IN_GAME = 1
+GAME_OVER = 2
+
+
+formatNumber = (n) ->
+  if n >= 1000
+    return "#{n}"
+  if n >= 100
+    return "0#{n}"
+  if n >= 10
+    return "00#{n}"
+  return "000#{n}"
 
 class @Game
   constructor: ({
@@ -10,6 +21,7 @@ class @Game
     # Element to attach events to
     @eventsElement
   }) ->
+    @state = IN_GAME
     @dragging = false
     @mouseX = @mouseY = 0
 
@@ -19,7 +31,7 @@ class @Game
 
     @particles = []
     @score =
-      perType: createEmptyScoresArray()
+      perType: Map.createEmptyScoresArray()
 
     @lastAmmo = -1  # for gui update
     @ammo = tweaks.ammo
@@ -72,14 +84,18 @@ class @Game
       requestAnimationFrame @animationFrame
 
   animate: =>
+    if @state == IN_GAME
+      @animateInGame()
+    @graphics.render @particles
+
+  animateInGame: ->
     @backgroundModified = false
     ticks = @clock.tick()
-    @scoresForFrame = createEmptyScoresArray()
+    @scoresForFrame = Map.createEmptyScoresArray()
     while ticks--
       @advanceFrame()
     if @backgroundModified
       @graphics.updateBackground @map.colorData
-    @graphics.render @particles
     for score, type in @scoresForFrame
       if score
         #console.log type, score
@@ -87,12 +103,23 @@ class @Game
 
     if @ammo != @lastAmmo
       @lastAmmo = @ammo
-      if @ammo >= 100
-        @ammoElement.textContent = "#{@ammo}"
-      else if @ammo >= 10
-        @ammoElement.textContent = "0#{@ammo}"
-      else
-        @ammoElement.textContent = "00#{@ammo}"
+      @ammoElement.textContent = formatNumber(@ammo)
+
+    if @ammo == 0 and @particles.length == 0
+      @enterGameOverState()
+
+  enterGameOverState: ->
+    @state = GAME_OVER
+    $('#gameover').show('slow')
+    for typeName, type of Map.pixelTypes
+      element = document.getElementById("kill#{type}")
+      if element
+        element.textContent = formatNumber(@score.perType[type])
+      element = document.getElementById("percent#{type}")
+      total = @map.totalPerType[type]
+      if element and total
+        percent = Math.floor(@score.perType[type] / total * 100 + .5)
+        element.textContent = "#{percent} %"
 
   advanceFrame: ->
     si = 0
