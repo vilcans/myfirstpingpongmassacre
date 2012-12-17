@@ -22,8 +22,6 @@ class @Game
     @eventsElement
   }) ->
     @state = IN_GAME
-    @dragging = false
-    @mouseX = @mouseY = 0
 
     @graphics = new Graphics(@parentElement)
     @keyboard = new Keyboard
@@ -168,10 +166,6 @@ class @Game
     @graphics.setCannonAngle @cannonAngle
 
   onMouseDown: (event) =>
-    @dragging = true
-    @mouseX = event.clientX
-    @mouseY = event.clientY
-
     if @ammo > 0
       --@ammo
       @aim [event.clientX, @graphics.canvas.height - event.clientY]
@@ -187,29 +181,8 @@ class @Game
         explosiveness: tweaks.projectileExplosiveness
         r: 0, g: 0, b: 0
 
-    $(@eventsElement).mousemove @onMouseDrag
-    event.preventDefault()
-
-  onMouseUp: (event) =>
-    @dragging = false
-
-    $(@eventsElement).off 'mousemove', @onMouseDrag
-
   onMouseMove: (event) =>
     @aim [event.clientX, @graphics.canvas.height - event.clientY]
-
-  onMouseDrag: (event) =>
-    x = event.clientX
-    y = event.clientY
-
-    if @dragging
-      dx = x - @mouseX
-      dy = y - @mouseY
-
-    @mouseX = x
-    @mouseY = y
-
-    event.preventDefault()
 
   addParticle: (particle) ->
     @particles.push particle
