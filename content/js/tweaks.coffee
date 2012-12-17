@@ -1,7 +1,7 @@
 @tweaks =
     projectileVelocity: 4
     projectileExplosiveness: 5
-    missileOrigin: [88, 512 - 410]
+    superAmmoExplosiveness: 7
 
     cannonPosition: [56, 512 - 428]
     cannonSize: [64, 256]   # size of base
@@ -12,10 +12,14 @@
 
     gravity: -.02
     nextExplosiveness:
+        7: 5
         5: 3
         3: 0
-        #1: 0
         0: 0
     explosionRadius: 3
 
-    ammo: 100
+    ammo: 20
+    superAmmoLimit: 10
+    ammoR: 0
+    ammoG: 0
+    ammoB: 0

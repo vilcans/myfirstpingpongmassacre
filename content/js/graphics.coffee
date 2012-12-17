@@ -80,6 +80,7 @@ makeCoords = (size) ->
   return [xArray, yArray]
 
 particleCoordsForExplosiveness =
+  7: makeCoords(2.5)
   5: makeCoords(2)
   3: makeCoords(1.5)
   0: makeCoords(1)

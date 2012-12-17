@@ -168,7 +168,10 @@ class @Game
   onMouseDown: (event) =>
     point = @getCoordinates(event)
     if @ammo > 0
-      --@ammo
+      if --@ammo == tweaks.superAmmoLimit
+        tweaks.ammoR = 1
+        tweaks.ammoG = .8
+        tweaks.ammoB = .2
       @aim point
 
       dx = Math.cos(@cannonAngle)
@@ -179,8 +182,8 @@ class @Game
         y: tweaks.cannonPosition[1] + dy * (tweaks.cannonLength - tweaks.projectileVelocity)
         vx: dx * tweaks.projectileVelocity
         vy: dy * tweaks.projectileVelocity
-        explosiveness: tweaks.projectileExplosiveness
-        r: 0, g: 0, b: 0
+        explosiveness: if @ammo < tweaks.superAmmoLimit then tweaks.superAmmoExplosiveness else tweaks.projectileExplosiveness
+        r: tweaks.ammoR, g: tweaks.ammoG, b: tweaks.ammoB
 
   onMouseMove: (event) =>
     point = @getCoordinates(event)
