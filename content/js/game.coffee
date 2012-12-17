@@ -166,9 +166,10 @@ class @Game
     @graphics.setCannonAngle @cannonAngle
 
   onMouseDown: (event) =>
+    point = @getCoordinates(event)
     if @ammo > 0
       --@ammo
-      @aim [event.clientX, @graphics.canvas.height - event.clientY]
+      @aim point
 
       dx = Math.cos(@cannonAngle)
       dy = Math.sin(@cannonAngle)
@@ -182,7 +183,11 @@ class @Game
         r: 0, g: 0, b: 0
 
   onMouseMove: (event) =>
-    @aim [event.clientX, @graphics.canvas.height - event.clientY]
+    point = @getCoordinates(event)
+    @aim point
 
   addParticle: (particle) ->
     @particles.push particle
+
+  getCoordinates: (event) ->
+    [event.pageX - @parentElement.offsetLeft, @graphics.canvas.height - (event.pageY - @parentElement.offsetTop)]
