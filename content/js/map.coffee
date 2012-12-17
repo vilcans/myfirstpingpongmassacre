@@ -36,12 +36,24 @@ class @Map
       g = imageData.data[i * 4 + 1]
       b = imageData.data[i * 4 + 2]
       a = imageData.data[i * 4 + 3]
+
+      v = 0
+      if b > 200 then v += 1
+      if r > 200 then v += 2
+      if g > 200 then v += 4
+
       if a < 235 and @colorData.data[i * 4 + 3] == 0
         t = pixelTypes.AIR
-      else if r > g
+      else if r > 20 and r < 200
         t = pixelTypes.PROPERTY
-      else
+      else if g > 20 and g < 200
         t = pixelTypes.DIRT
+      else if v == 2 and r == 255
+        t = pixelTypes.MEN
+      else if v == 2
+        t = pixelTypes.WOMEN
+      else
+        t = v
       @totalPerType[t]++
       @collisionData[i] = t
 

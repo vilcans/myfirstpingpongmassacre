@@ -18,4 +18,4 @@
         0: 0
     explosionRadius: 3
 
-    ammo: 20
+    ammo: 100

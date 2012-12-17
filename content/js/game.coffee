@@ -9,10 +9,10 @@ formatNumber = (n) ->
   if n >= 1000
     return "#{n}"
   if n >= 100
-    return "0#{n}"
+    return "#{n}"
   if n >= 10
-    return "00#{n}"
-  return "000#{n}"
+    return "0#{n}"
+  return "00#{n}"
 
 class @Game
   constructor: ({
@@ -112,7 +112,7 @@ class @Game
     for typeName, type of Map.pixelTypes
       element = document.getElementById("kill#{type}")
       if element
-        element.textContent = formatNumber(@score.perType[type])
+        element.textContent = "#{@score.perType[type]}"
       element = document.getElementById("percent#{type}")
       total = @map.totalPerType[type]
       if element and total
